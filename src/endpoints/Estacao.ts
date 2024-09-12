@@ -1,20 +1,10 @@
 import express, { Request, Response } from "express";
 import { StartConnection, EndConnection, Query } from "../services/postgres";
-import { Client } from "ts-postgres";
+import { Pool } from "pg";
+import { ICadastroEstacao } from "../types/Estacao";
+import { IResponsePadrao } from "../types/Response";
 
 const router = express.Router();
-
-interface ICadastroEstacao {
-    nome: string,
-    endereco: string,
-    latitude: number,
-    longitude: number,
-    mac_address: string
-};
-
-interface IAtualizacaoEstacao {
-    _: any
-};
 
 router.post(
     "/cadastrar",
@@ -27,146 +17,153 @@ router.post(
             mac_address
         } = req.body as ICadastroEstacao;
 
-        let client: Client | null = null;
+        let bdConn: Pool | null = null;
         try {
-            client = await StartConnection();
+            bdConn = await StartConnection();
 
-            const resultado = await Query<ICadastroEstacao>(
-                client,
-                "query",
-                ["valor 1", "valor 2", 123]
+            const resultQuery = await Query<ICadastroEstacao>(
+                bdConn,
+                "insert into estacao (nome, endereco, latitude, longitude, mac_address) values ($1, $2, $3, $4, $5);",
+                [nome, endereco, latitude, longitude, mac_address]
             );
 
-            // 
-            for (let res in resultado) {
+            const retorno = {
+                errors: [],
+                msg: ["estação cadastrada com sucesso"],
+                data: {
+                    rows: resultQuery.rows,
+                    fields: resultQuery.fields
+                }
+            } as IResponsePadrao;
 
-            }
-
-            if (client) EndConnection(client);
+            res.status(200).send(retorno);
         } catch (err) {
-            if (client) EndConnection(client);
-            res.status(500).send(err);
+            const retorno = {
+                errors: [(err as Error).message],
+                msg: ["falha ao cadastrar estação"],
+                data: null
+            } as IResponsePadrao;
+
+            res.status(500).send(retorno);
         }
+        if (bdConn) EndConnection(bdConn);
     }
 );
 
-router.get(
-    "/:estacaoId",
-    async function (req: Request, res: Response) {
-        const id = req.params.estacaoId;
+// router.get(
+//     "/:estacaoId",
+//     async function (req: Request, res: Response) {
+//         const id = req.params.estacaoId;
 
-        let client: Client | null = null;
-        try {
-            client = await StartConnection();
+//         let bdConn: Pool | null = null;
+//         try {
+//             bdConn = await StartConnection();
 
-            const resultado = await Query<ICadastroEstacao>(
-                client,
-                "query",
-                ["valor 1", "valor 2", 123]
-            );
+//             const resultQuery = await Query<ICadastroEstacao>(
+//                 bdConn,
+//                 "query",
+//                 ["valor 1", "valor 2", 123]
+//             );
 
-            // 
-            for (let res in resultado) {
+//             // 
+//             for (let res in resultQuery) {
 
-            }
+//             }
 
-            if (client) EndConnection(client);
-        } catch (err) {
-            if (client) EndConnection(client);
-            res.status(500).send(err);
-        }
-    }
-);
+//             if (bdConn) EndConnection(bdConn);
+//         } catch (err) {
+//             if (bdConn) EndConnection(bdConn);
+//             res.status(500).send(err);
+//         }
+//     }
+// );
 
-router.get(
-    "/:quantidade/:pagina",
-    async function (req: Request, res: Response) {
-        const quantidade = req.params.quantidade;
-        const pagina = req.params.pagina;
-        // retorna todas as estações, com paginação
+// router.get(
+//     "/:quantidade/:pagina",
+//     async function (req: Request, res: Response) {
+//         const quantidade = req.params.quantidade;
+//         const pagina = req.params.pagina;
 
-        let client: Client | null = null;
-        try {
-            client = await StartConnection();
+//         let bdConn: Pool | null = null;
+//         try {
+//             bdConn = await StartConnection();
 
-            const resultado = await Query<ICadastroEstacao>(
-                client,
-                "query",
-                ["valor 1", "valor 2", 123]
-            );
+//             const resultQuery = await Query<ICadastroEstacao>(
+//                 bdConn,
+//                 "select * from estacao limit $1 offset $2;",
+//                 [quantidade, pagina]
+//             );
 
-            // 
-            for (let res in resultado) {
+//             if (resultQuery.rows) res.status(200).send(resultQuery.rows);
+//             else res.status(404).send(resultQuery.rows);
 
-            }
+//             if (bdConn) EndConnection(bdConn);
+//         } catch (err) {
+//             res.status(500).send(err);
+//             if (bdConn) EndConnection(bdConn);
+//         }
+//     }
+// );
 
-            if (client) EndConnection(client);
-        } catch (err) {
-            if (client) EndConnection(client);
-            res.status(500).send(err);
-        }
-    }
-);
+// router.put(
+//     "/atualizar",
+//     async function (req: Request, res: Response) {
+//         const {
+//             _
+//         } = req.body as IAtualizacaoEstacao;
 
-router.put(
-    "/atualizar",
-    async function (req: Request, res: Response) {
-        const {
-            _
-        } = req.body as IAtualizacaoEstacao;
+//         let bdConn: Pool | null = null;
+//         try {
+//             bdConn = await StartConnection();
 
-        let client: Client | null = null;
-        try {
-            client = await StartConnection();
+//             const resultQuery = await Query<ICadastroEstacao>(
+//                 bdConn,
+//                 "query",
+//                 ["valor 1", "valor 2", 123]
+//             );
 
-            const resultado = await Query<ICadastroEstacao>(
-                client,
-                "query",
-                ["valor 1", "valor 2", 123]
-            );
+//             // 
+//             for (let res in resultQuery) {
 
-            // 
-            for (let res in resultado) {
+//             }
 
-            }
+//             if (bdConn) EndConnection(bdConn);
+//         } catch (err) {
+//             if (bdConn) EndConnection(bdConn);
+//             res.status(500).send(err);
+//         }
+//     }
+// );
 
-            if (client) EndConnection(client);
-        } catch (err) {
-            if (client) EndConnection(client);
-            res.status(500).send(err);
-        }
-    }
-);
+// router.delete(
+//     "/deletar",
+//     async function (req: Request, res: Response) {
+//         const {
+//             _
+//         } = req.body;
 
-router.delete(
-    "/deletar",
-    async function (req: Request, res: Response) {
-        const {
-            _
-        } = req.body;
+//         let bdConn: Pool | null = null;
+//         try {
+//             bdConn = await StartConnection();
 
-        let client: Client | null = null;
-        try {
-            client = await StartConnection();
+//             const resultQuery = await Query<ICadastroEstacao>(
+//                 bdConn,
+//                 "query",
+//                 ["valor 1", "valor 2", 123]
+//             );
 
-            const resultado = await Query<ICadastroEstacao>(
-                client,
-                "query",
-                ["valor 1", "valor 2", 123]
-            );
+//             // 
+//             for (let res in resultQuery) {
 
-            // 
-            for (let res in resultado) {
+//             }
 
-            }
-
-            if (client) EndConnection(client);
-        } catch (err) {
-            if (client) EndConnection(client);
-            res.status(500).send(err);
-        }
-    }
-);
+//             if (bdConn) EndConnection(bdConn);
+//         } catch (err) {
+//             if (bdConn) EndConnection(bdConn);
+//             res.status(500).send(err);
+//         }
+//     }
+// );
 
 export {
     router as EstacaoRouter

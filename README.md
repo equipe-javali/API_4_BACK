@@ -29,3 +29,37 @@ Cada branch é referente a uma tarefa ou um conjunto de tarefas.
 * ci - Indica mudanças relacionadas a integração contínua (Continuous Integration).
 * cleanup - Indica a remoção de código comentado ou trechos desnecessários no código-fonte.
 * remove - Indica a exclusão de arquivos, diretórios ou funcionalidades obsoletas ou não utilizadas.
+
+# Endpoints
+
+## Estação `estacao/`
+
+### POST - Cadastrar `cadastrar/`
+
+| Atributo | Descrição | Obrigatório | Limite | Exemplo |
+| -------- | --------- | ----------- | ------ | ------- |
+| nome        | Nome da estação     | Sim | N/A       | Estação teste SJC |
+| endereco    | Endereço geográfico | Sim | N/A       | 12247-014, Avenida Cesare Monsueto Giulio Lattes, 1350 |
+| latitude    | Latitude            | Sim | -90/+90   | -23.162503 |
+| longitude   | Longitude           | Sim | -180/+180 | -45.794618 |
+| mac_address | Endereço físico MAC | Sim | N/A       | 00:00:5E:00:02:01 |
+
+#### Request Body
+```
+{
+    nome: string,
+    endereco: string,
+    latitude: number,
+    longitude: number,
+    mac_address: string
+}
+```
+
+#### Response Body
+```
+{
+    errors: Array<string>,
+    msg: Array<string>,
+    data: any
+}
+```

@@ -3,9 +3,9 @@ import { Pool, QueryResultRow } from "pg";
 require('dotenv-ts').config();
 
 function StartConnection(): Pool {
-    const { PGHOST, PGDATABASE, PGUSER, PGPASSWORD, ENDPOINT_ID, PORT } = process.env;
+    const { PGHOST, PGDATABASE, PGUSER, PGPASSWORD, ENDPOINT_ID, PGPORT } = process.env;
 
-    if (!PGHOST || !PGDATABASE || !PGUSER || !PGPASSWORD || !ENDPOINT_ID || !PORT) {
+    if (!PGHOST || !PGDATABASE || !PGUSER || !PGPASSWORD || !ENDPOINT_ID || !PGPORT) {
         throw "Erro ao carregar variáveis de ambiente";
     }
 
@@ -14,7 +14,7 @@ function StartConnection(): Pool {
         user: PGUSER,
         password: PGPASSWORD,
         database: PGDATABASE,
-        port: parseInt(PORT),
+        port: parseInt(PGPORT),
         ssl: true
     });
 }
