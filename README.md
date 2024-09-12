@@ -30,11 +30,14 @@ Cada branch é referente a uma tarefa ou um conjunto de tarefas.
 * cleanup - Indica a remoção de código comentado ou trechos desnecessários no código-fonte.
 * remove - Indica a exclusão de arquivos, diretórios ou funcionalidades obsoletas ou não utilizadas.
 
-# Endpoints
+# Endpoints <span id="sumario"></span>
 
-## Estação `estacao/`
+* [Estação](#estacao)
+    * [Cadastrar](#estacao.cadastrar)
 
-### POST - Cadastrar `cadastrar/`
+## Estação `estacao/` <span id="estacao"></span>
+
+### POST - Cadastrar `cadastrar/` <span id="estacao.cadastrar"></span>
 
 | Atributo | Descrição | Obrigatório | Limite | Exemplo |
 | -------- | --------- | ----------- | ------ | ------- |
@@ -63,3 +66,5 @@ Cada branch é referente a uma tarefa ou um conjunto de tarefas.
     data: any
 }
 ```
+
+[Voltar ao topo](#sumario)
