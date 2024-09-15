@@ -35,13 +35,13 @@ Cada branch é referente a uma tarefa ou um conjunto de tarefas.
 * [Estação](#estacao)
     * [Cadastrar](#estacao.cadastrar)
     * [Listar](#estacao.listar)
-    <!-- * [Listar Página](#estacao.listar.pagina) -->
+    * [Listar Página](#estacao.listar.pagina)
     * [Atualizar](#estacao.atualizar)
     * [Deletar](#estacao.deletar)
 
 ## Estação `estacao/` <span id="estacao"></span>
 
-### POST - Cadastrar `cadastrar/` <span id="estacao.cadastrar"></span>
+### POST - Cadastrar `estacao/cadastrar/` <span id="estacao.cadastrar"></span>
 
 | Atributo | Descrição | Obrigatório | Limite | Exemplo |
 | -------- | --------- | ----------- | ------ | ------- |
@@ -73,7 +73,7 @@ Cada branch é referente a uma tarefa ou um conjunto de tarefas.
 
 [Voltar ao topo](#sumario)
 
-### GET - Listar `:estacaoId` <span id="estacao.listar"></span>
+### GET - Listar `estacao/:estacaoId` <span id="estacao.listar"></span>
 
 | Atributo | Descrição | Obrigatório | Limite | Exemplo |
 | -------- | --------- | ----------- | ------ | ------- |
@@ -90,9 +90,25 @@ Cada branch é referente a uma tarefa ou um conjunto de tarefas.
 
 [Voltar ao topo](#sumario)
 
+### GET - Listar Página `estacao/:quantidade/:pagina` <span id="estacao.listar.pagina"></span>
 
+| Atributo | Descrição | Obrigatório | Limite | Exemplo |
+| -------- | --------- | ----------- | ------ | ------- |
+| quantidade | número máximo de estações | Sim | N/A | 1 |
+| pagina     | página ou offset          | Sim | N/A | 1 |
 
-### PATCH - Atualizar `atualizar/` <span id="estacao.atualizar"></span>
+#### Response Body
+```
+{
+    errors: Array<string>,
+    msg: Array<string>,
+    data: any
+}
+```
+
+[Voltar ao topo](#sumario)
+
+### PATCH - Atualizar `estacao/atualizar/` <span id="estacao.atualizar"></span>
 
 | Atributo | Descrição | Obrigatório | Limite | Exemplo |
 | -------- | --------- | ----------- | ------ | ------- |
@@ -126,7 +142,7 @@ Cada branch é referente a uma tarefa ou um conjunto de tarefas.
 
 [Voltar ao topo](#sumario)
 
-### DELETE - Deletar `deletar/` <span id="estacao.deletar"></span>
+### DELETE - Deletar `estacao/deletar/` <span id="estacao.deletar"></span>
 
 | Atributo | Descrição | Obrigatório | Limite | Exemplo |
 | -------- | --------- | ----------- | ------ | ------- |
