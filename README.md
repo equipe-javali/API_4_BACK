@@ -35,6 +35,7 @@ Cada branch é referente a uma tarefa ou um conjunto de tarefas.
 * [Estação](#estacao)
     * [Cadastrar](#estacao.cadastrar)
     * [Atualizar](#estacao.atualizar)
+    * [Deletar](#estacao.deletar)
 
 ## Estação `estacao/` <span id="estacao"></span>
 
@@ -90,6 +91,30 @@ Cada branch é referente a uma tarefa ou um conjunto de tarefas.
     latitude: number,
     longitude: number,
     mac_address: string
+}
+```
+
+#### Response Body
+```
+{
+    errors: Array<string>,
+    msg: Array<string>,
+    data: any
+}
+```
+
+[Voltar ao topo](#sumario)
+
+### DELETE - Deletar `deletar/` <span id="estacao.deletar"></span>
+
+| Atributo | Descrição | Obrigatório | Limite | Exemplo |
+| -------- | --------- | ----------- | ------ | ------- |
+| id       | id da estação     | Sim | N/A    | 1 |
+
+#### Request Body
+```
+{
+    id: number
 }
 ```
 

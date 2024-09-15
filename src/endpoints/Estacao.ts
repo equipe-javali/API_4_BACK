@@ -1,7 +1,7 @@
 import express, { Request, Response } from "express";
 import { StartConnection, EndConnection, Query } from "../services/postgres";
 import { Pool } from "pg";
-import { IAtualizacaoEstacao, ICadastroEstacao } from "../types/Estacao";
+import { IAtualizarEstacao, ICadastrarEstacao, IDeletarEstacao } from "../types/Estacao";
 import { IResponsePadrao } from "../types/Response";
 
 const router = express.Router();
@@ -15,13 +15,13 @@ router.post(
             latitude,
             longitude,
             mac_address
-        } = req.body as ICadastroEstacao;
+        } = req.body as ICadastrarEstacao;
 
         let bdConn: Pool | null = null;
         try {
             bdConn = await StartConnection();
 
-            const resultQuery = await Query<ICadastroEstacao>(
+            const resultQuery = await Query<ICadastrarEstacao>(
                 bdConn,
                 "insert into estacao (nome, endereco, latitude, longitude, mac_address) values ($1, $2, $3, $4, $5);",
                 [nome, endereco, latitude, longitude, mac_address]
@@ -111,7 +111,7 @@ router.patch(
             latitude,
             longitude,
             mac_address
-        } = req.body as IAtualizacaoEstacao;
+        } = req.body as IAtualizarEstacao;
 
         if (id == undefined) {
             const retorno = {
@@ -134,7 +134,7 @@ router.patch(
             if (longitude != undefined) valoresQuery.push(`longitude = '${longitude}'`);
             if (mac_address != undefined) valoresQuery.push(`mac_address = '${mac_address}'`);
 
-            const resultQuery = await Query<IAtualizacaoEstacao>(
+            const resultQuery = await Query<IAtualizarEstacao>(
                 bdConn,
                 `update estacao set ${valoresQuery.join(", ")} where id = ${id};`,
                 []
@@ -149,7 +149,7 @@ router.patch(
         } catch (err) {
             const retorno = {
                 errors: [(err as Error).message],
-                msg: ["falha ao cadastrar estação"],
+                msg: ["falha ao atualizar estação"],
                 data: null
             } as IResponsePadrao;
             res.status(500).send(retorno);
@@ -158,35 +158,40 @@ router.patch(
     }
 );
 
-// router.delete(
-//     "/deletar",
-//     async function (req: Request, res: Response) {
-//         const {
-//             _
-//         } = req.body;
+router.delete(
+    "/deletar",
+    async function (req: Request, res: Response) {
+        const {
+            id
+        } = req.body as IDeletarEstacao;
 
-//         let bdConn: Pool | null = null;
-//         try {
-//             bdConn = await StartConnection();
+        let bdConn: Pool | null = null;
+        try {
+            bdConn = await StartConnection();
 
-//             const resultQuery = await Query<ICadastroEstacao>(
-//                 bdConn,
-//                 "query",
-//                 ["valor 1", "valor 2", 123]
-//             );
+            const resultQuery = await Query<IDeletarEstacao>(
+                bdConn,
+                `delete from estacao where id = ${id};`,
+                []
+            );
 
-//             // 
-//             for (let res in resultQuery) {
-
-//             }
-
-//             if (bdConn) EndConnection(bdConn);
-//         } catch (err) {
-//             if (bdConn) EndConnection(bdConn);
-//             res.status(500).send(err);
-//         }
-//     }
-// );
+            const retorno = {
+                errors: [],
+                msg: ["estação deletada com sucesso"],
+                data: null
+            } as IResponsePadrao;
+            res.status(200).send(retorno);
+        } catch (err) {
+            const retorno = {
+                errors: [(err as Error).message],
+                msg: ["falha ao deletar estação"],
+                data: null
+            } as IResponsePadrao;
+            res.status(500).send(retorno);
+        }
+        if (bdConn) EndConnection(bdConn);
+    }
+);
 
 export {
     router as EstacaoRouter
