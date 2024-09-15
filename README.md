@@ -34,6 +34,7 @@ Cada branch é referente a uma tarefa ou um conjunto de tarefas.
 
 * [Estação](#estacao)
     * [Cadastrar](#estacao.cadastrar)
+    * [Atualizar](#estacao.atualizar)
 
 ## Estação `estacao/` <span id="estacao"></span>
 
@@ -50,6 +51,40 @@ Cada branch é referente a uma tarefa ou um conjunto de tarefas.
 #### Request Body
 ```
 {
+    nome: string,
+    endereco: string,
+    latitude: number,
+    longitude: number,
+    mac_address: string
+}
+```
+
+#### Response Body
+```
+{
+    errors: Array<string>,
+    msg: Array<string>,
+    data: any
+}
+```
+
+[Voltar ao topo](#sumario)
+
+### PATCH - Atualizar `atualizar/` <span id="estacao.atualizar"></span>
+
+| Atributo | Descrição | Obrigatório | Limite | Exemplo |
+| -------- | --------- | ----------- | ------ | ------- |
+| id          | id da estação       | Sim | N/A       | 1 |
+| nome        | Nome da estação     | Não | N/A       | Estação teste SJC |
+| endereco    | Endereço geográfico | Não | N/A       | 12247-014, Avenida Cesare Monsueto Giulio Lattes, 1350 |
+| latitude    | Latitude            | Não | -90/+90   | -23.162503 |
+| longitude   | Longitude           | Não | -180/+180 | -45.794618 |
+| mac_address | Endereço físico MAC | Não | N/A       | 00:00:5E:00:02:01 |
+
+#### Request Body
+```
+{
+    id: number,
     nome: string,
     endereco: string,
     latitude: number,

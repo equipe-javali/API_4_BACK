@@ -7,5 +7,10 @@ export interface ICadastroEstacao {
 };
 
 export interface IAtualizacaoEstacao {
-    _: any
+    id: number,
+    nome: string,
+    endereco: string,
+    latitude: number,
+    longitude: number,
+    mac_address: string
 };

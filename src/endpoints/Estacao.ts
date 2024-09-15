@@ -1,7 +1,7 @@
 import express, { Request, Response } from "express";
 import { StartConnection, EndConnection, Query } from "../services/postgres";
 import { Pool } from "pg";
-import { ICadastroEstacao } from "../types/Estacao";
+import { IAtualizacaoEstacao, ICadastroEstacao } from "../types/Estacao";
 import { IResponsePadrao } from "../types/Response";
 
 const router = express.Router();
@@ -30,10 +30,7 @@ router.post(
             const retorno = {
                 errors: [],
                 msg: ["estação cadastrada com sucesso"],
-                data: {
-                    rows: resultQuery.rows,
-                    fields: resultQuery.fields
-                }
+                data: null
             } as IResponsePadrao;
 
             res.status(200).send(retorno);
@@ -43,7 +40,6 @@ router.post(
                 msg: ["falha ao cadastrar estação"],
                 data: null
             } as IResponsePadrao;
-
             res.status(500).send(retorno);
         }
         if (bdConn) EndConnection(bdConn);
@@ -105,35 +101,62 @@ router.post(
 //     }
 // );
 
-// router.put(
-//     "/atualizar",
-//     async function (req: Request, res: Response) {
-//         const {
-//             _
-//         } = req.body as IAtualizacaoEstacao;
+router.patch(
+    "/atualizar",
+    async function (req: Request, res: Response) {
+        const {
+            id,
+            nome,
+            endereco,
+            latitude,
+            longitude,
+            mac_address
+        } = req.body as IAtualizacaoEstacao;
 
-//         let bdConn: Pool | null = null;
-//         try {
-//             bdConn = await StartConnection();
+        if (id == undefined) {
+            const retorno = {
+                errors: [],
+                msg: [`o id (${id}) é inválido`],
+                data: null
+            } as IResponsePadrao;
+            res.status(404).send(retorno);
+            return;
+        }
 
-//             const resultQuery = await Query<ICadastroEstacao>(
-//                 bdConn,
-//                 "query",
-//                 ["valor 1", "valor 2", 123]
-//             );
+        let bdConn: Pool | null = null;
+        try {
+            bdConn = await StartConnection();
 
-//             // 
-//             for (let res in resultQuery) {
+            let valoresQuery: Array<string> = [];
+            if (nome != undefined) valoresQuery.push(`nome = '${nome}'`);
+            if (endereco != undefined) valoresQuery.push(`endereco = '${endereco}'`);
+            if (latitude != undefined) valoresQuery.push(`latitude = '${latitude}'`);
+            if (longitude != undefined) valoresQuery.push(`longitude = '${longitude}'`);
+            if (mac_address != undefined) valoresQuery.push(`mac_address = '${mac_address}'`);
 
-//             }
+            const resultQuery = await Query<IAtualizacaoEstacao>(
+                bdConn,
+                `update estacao set ${valoresQuery.join(", ")} where id = ${id};`,
+                []
+            );
 
-//             if (bdConn) EndConnection(bdConn);
-//         } catch (err) {
-//             if (bdConn) EndConnection(bdConn);
-//             res.status(500).send(err);
-//         }
-//     }
-// );
+            const retorno = {
+                errors: [],
+                msg: ["estação atualizada com sucesso"],
+                data: null
+            } as IResponsePadrao;
+            res.status(200).send(retorno);
+        } catch (err) {
+            const retorno = {
+                errors: [(err as Error).message],
+                msg: ["falha ao cadastrar estação"],
+                data: null
+            } as IResponsePadrao;
+            res.status(500).send(retorno);
+        }
+        if (bdConn) EndConnection(bdConn);
+    }
+);
 
 // router.delete(
 //     "/deletar",
