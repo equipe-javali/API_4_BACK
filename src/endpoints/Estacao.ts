@@ -1,7 +1,7 @@
 import express, { Request, Response } from "express";
 import { StartConnection, EndConnection, Query } from "../services/postgres";
 import { Pool } from "pg";
-import { IAtualizarEstacao, ICadastrarEstacao, IDeletarEstacao } from "../types/Estacao";
+import { IAtualizarEstacao, ICadastrarEstacao, IDeletarEstacao, IListarEstacao } from "../types/Estacao";
 import { IResponsePadrao } from "../types/Response";
 
 const router = express.Router();
@@ -32,7 +32,6 @@ router.post(
                 msg: ["estação cadastrada com sucesso"],
                 data: null
             } as IResponsePadrao;
-
             res.status(200).send(retorno);
         } catch (err) {
             const retorno = {
@@ -46,33 +45,62 @@ router.post(
     }
 );
 
-// router.get(
-//     "/:estacaoId",
-//     async function (req: Request, res: Response) {
-//         const id = req.params.estacaoId;
+router.get(
+    "/:estacaoId",
+    async function (req: Request, res: Response) {
+        const id: number = parseInt(req.params.estacaoId);
 
-//         let bdConn: Pool | null = null;
-//         try {
-//             bdConn = await StartConnection();
+        if (id == undefined || id == 0) {
+            const retorno = {
+                errors: [],
+                msg: [`o id (${id}) é inválido`],
+                data: null
+            } as IResponsePadrao;
+            res.status(400).send(retorno);
+            return;
+        }
 
-//             const resultQuery = await Query<ICadastroEstacao>(
-//                 bdConn,
-//                 "query",
-//                 ["valor 1", "valor 2", 123]
-//             );
+        let bdConn: Pool | null = null;
+        try {
+            bdConn = await StartConnection();
 
-//             // 
-//             for (let res in resultQuery) {
+            const resultQuery = await Query<IListarEstacao>(
+                bdConn,
+                `select * from estacao where id = ${id};`,
+                []
+            );
 
-//             }
+            if (!resultQuery.rows.length) {
+                const retorno = {
+                    errors: [`estação com id (${id}) não existe`],
+                    msg: [],
+                    data: null
+                } as IResponsePadrao;
+                res.status(404).send(retorno);
+                if (bdConn) EndConnection(bdConn);
+                return;
+            }
 
-//             if (bdConn) EndConnection(bdConn);
-//         } catch (err) {
-//             if (bdConn) EndConnection(bdConn);
-//             res.status(500).send(err);
-//         }
-//     }
-// );
+            const retorno = {
+                errors: [],
+                msg: ["estação listada com sucesso"],
+                data: {
+                    rows: resultQuery.rows,
+                    fields: resultQuery.fields
+                }
+            } as IResponsePadrao;
+            res.status(200).send(retorno);
+        } catch (err) {
+            const retorno = {
+                errors: [(err as Error).message],
+                msg: ["falha ao listar estação"],
+                data: null
+            } as IResponsePadrao;
+            res.status(500).send(retorno);
+        }
+        if (bdConn) EndConnection(bdConn);
+    }
+);
 
 // router.get(
 //     "/:quantidade/:pagina",
@@ -113,7 +141,7 @@ router.patch(
             mac_address
         } = req.body as IAtualizarEstacao;
 
-        if (id == undefined) {
+        if (id == undefined || id == 0) {
             const retorno = {
                 errors: [],
                 msg: [`o id (${id}) é inválido`],

@@ -7,11 +7,12 @@ export interface ICadastrarEstacao {
 };
 
 export interface IListarEstacao {
-    id: number
-};
-
-export interface IListarPaginaEstacao {
-    id: number
+    id: number,
+    nome: string,
+    endereco: string,
+    latitude: number,
+    longitude: number,
+    mac_address: string
 };
 
 export interface IAtualizarEstacao {

@@ -34,6 +34,8 @@ Cada branch é referente a uma tarefa ou um conjunto de tarefas.
 
 * [Estação](#estacao)
     * [Cadastrar](#estacao.cadastrar)
+    * [Listar](#estacao.listar)
+    <!-- * [Listar Página](#estacao.listar.pagina) -->
     * [Atualizar](#estacao.atualizar)
     * [Deletar](#estacao.deletar)
 
@@ -70,6 +72,25 @@ Cada branch é referente a uma tarefa ou um conjunto de tarefas.
 ```
 
 [Voltar ao topo](#sumario)
+
+### GET - Listar `:estacaoId` <span id="estacao.listar"></span>
+
+| Atributo | Descrição | Obrigatório | Limite | Exemplo |
+| -------- | --------- | ----------- | ------ | ------- |
+| estacaoId| id da estação     | Sim | N/A    | 1 |
+
+#### Response Body
+```
+{
+    errors: Array<string>,
+    msg: Array<string>,
+    data: any
+}
+```
+
+[Voltar ao topo](#sumario)
+
+
 
 ### PATCH - Atualizar `atualizar/` <span id="estacao.atualizar"></span>
 
