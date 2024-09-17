@@ -1,7 +1,5 @@
 import { Pool, QueryResultRow } from "pg";
 
-require('dotenv-ts').config();
-
 function StartConnection(): Pool {
     const { PGHOST, PGDATABASE, PGUSER, PGPASSWORD, ENDPOINT_ID, PGPORT } = process.env;
 
