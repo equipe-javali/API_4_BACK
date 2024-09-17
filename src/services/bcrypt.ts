@@ -1,7 +1,7 @@
-import { compareSync, hashSync } from "bcrypt-ts";
+import { compareSync, hashSync } from "bcrypt";
 
 function HashPassword(password: string): string {
-    return hashSync(password);
+    return hashSync(password, 10);
 }
 
 function HashPasswordCompare(hash: string, password: string): boolean {

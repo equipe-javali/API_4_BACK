@@ -3,7 +3,7 @@ import { StartConnection, EndConnection, Query } from "../services/postgres";
 import { Pool } from "pg";
 import { ICadastrarUsuario } from "../types/Usuario";
 import { IResponsePadrao } from "../types/Response";
-// import { HashPassword } from "../services/bcrypt";
+const { HashPassword } = require("../services/bcrypt");
 
 const router = express.Router();
 
@@ -21,12 +21,12 @@ router.post(
             bdConn = await StartConnection();
 
             // Hash da senha antes de armazenar no banco de dados
-            // const senhaHashed = HashPassword(senha);
+            const senhaHashed = HashPassword(senha);
 
             const resultQuery = await Query<ICadastrarUsuario>(
                 bdConn,
                 "INSERT INTO usuario (nome, email, senha) VALUES ($1, $2, $3) RETURNING *;",
-                [nome, email, senha]
+                [nome, email, senhaHashed]
             );
 
             const retorno = {
