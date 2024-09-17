@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 
 import { EstacaoRouter } from "./endpoints/Estacao";
+import { UsuarioRouter } from "./endpoints/Usuario";
 
 require("dotenv-ts").config();
 
@@ -20,5 +21,7 @@ app.listen(
 );
 
 app.use("/estacao", EstacaoRouter);
+app.use("/usuario", UsuarioRouter);
+
 
 module.exports = app;
