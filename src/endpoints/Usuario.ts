@@ -47,6 +47,53 @@ router.post(
     }
 );
 
+// Rota para visualizar perfil do usuário pelo ID
+router.get(
+    "/:usuarioId",
+    async (req: Request, res: Response) => {
+        const userId = parseInt(req.params.usuarioId);
+
+        let bdConn: Pool | null = null;
+        try {
+            bdConn = await StartConnection();
+
+            const resultQuery = await Query(
+                bdConn,
+                "SELECT id, nome, email FROM usuario WHERE id = $1;",
+                [userId]
+            );
+
+            if (resultQuery.rows.length === 0) {
+                return res.status(404).send({
+                    errors: ["Usuário não encontrado"],
+                    msg: [],
+                    data: null
+                } as IResponsePadrao);
+            }
+
+            const userData = resultQuery.rows[0];
+            const retorno = {
+                errors: [],
+                msg: ["Perfil do usuário"],
+                data: {
+                    id: userData.id,
+                    nome: userData.nome,
+                    email: userData.email
+                }
+            } as IResponsePadrao;
+            res.status(200).send(retorno);
+        } catch (err) {
+            const retorno = {
+                errors: [(err as Error).message],
+                msg: ["Falha ao visualizar perfil do usuário"],
+                data: null
+            } as IResponsePadrao;
+            res.status(500).send(retorno);
+        }
+        if (bdConn) EndConnection(bdConn);
+    }
+);
+
 export {
     router as UsuarioRouter
 };
