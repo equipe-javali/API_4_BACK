@@ -241,22 +241,6 @@ router.get(
  *     responses:
  *       200:
  *         description: Parâmetro atualizado com sucesso
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 errors:
- *                   type: array
- *                   items:
- *                     type: string
- *                 msg:
- *                   type: array
- *                   items:
- *                     type: string
- *                 data:
- *                   type: object
- *                   nullable: true
  *       400:
  *         description: ID inválido
  *       500:
@@ -314,7 +298,61 @@ router.patch(
         if (bdConn) EndConnection(bdConn);
     }
 );
+/**
+ * @swagger
+ * /parametro/deletar:
+ *   delete:
+ *     tags: [Parametro]
+ *     summary: Deleta um parâmetro
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: integer
+ *     responses:
+ *       200:
+ *         description: Parâmetro deletado com sucesso
+ *       500:
+ *         description: Falha ao deletar parâmetro
+ */
+router.delete(
+    "/deletar",
+    async function (req: Request, res: Response) {
+        const {
+            id
+        } = req.body as IDeletarParametro;
 
+        let bdConn: Pool | null = null;
+        try {
+            bdConn = await StartConnection();
+
+            const resultQuery = await Query<IDeletarParametro>(
+                bdConn,
+                `delete from tipo_parametro where id = ${id};`,
+                []
+            );
+
+            const retorno = {
+                errors: [],
+                msg: ["parâmetro deletado com sucesso"],
+                data: null
+            } as IResponsePadrao;
+            res.status(200).send(retorno);
+        } catch (err) {
+            const retorno = {
+                errors: [(err as Error).message],
+                msg: ["falha ao deletar parâmetro"],
+                data: null
+            } as IResponsePadrao;
+            res.status(500).send(retorno);
+        }
+        if (bdConn) EndConnection(bdConn);
+    }
+);
 
 export {
     router as ParametroRouter
