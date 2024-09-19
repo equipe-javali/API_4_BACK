@@ -5,6 +5,7 @@ import { swaggerDocs } from "./swagger/swagger";
 import { EstacaoRouter } from "./endpoints/Estacao";
 import { UsuarioRouter } from "./endpoints/Usuario";
 import { ParametroRouter } from "./endpoints/Parametro";
+import { UnidadeMedidaRouter } from "./endpoints/UnidadeMedida";
 
 require("dotenv-ts").config();
 
@@ -19,6 +20,7 @@ app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 app.use("/estacao", EstacaoRouter);
 app.use("/parametro", ParametroRouter);
+app.use("/unidademedida", UnidadeMedidaRouter);
 app.use("/usuario", UsuarioRouter);
 
 app.listen(
