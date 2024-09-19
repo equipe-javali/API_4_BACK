@@ -217,6 +217,103 @@ router.get(
         if (bdConn) EndConnection(bdConn);
     }
 );
+/**
+ * @swagger
+ * /parametro/atualizar:
+ *   patch:
+ *     tags: [Parametro]
+ *     summary: Atualiza um parâmetro existente
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: integer
+ *               nome:
+ *                 type: string
+ *               fator:
+ *                 type: number
+ *               offset:
+ *                 type: number
+ *     responses:
+ *       200:
+ *         description: Parâmetro atualizado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 errors:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                 msg:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                 data:
+ *                   type: object
+ *                   nullable: true
+ *       400:
+ *         description: ID inválido
+ *       500:
+ *         description: Falha ao atualizar parâmetro
+ */
+router.patch(
+    "/atualizar",
+    async function (req: Request, res: Response) {
+        const {
+            id,
+            nome,
+            fator,
+            offset
+        } = req.body as IAtualizarParametro;
+
+        if (id == undefined || id == 0) {
+            const retorno = {
+                errors: [],
+                msg: [`o id (${id}) é inválido`],
+                data: null
+            } as IResponsePadrao;
+            res.status(400).send(retorno);
+            return;
+        }
+
+        let bdConn: Pool | null = null;
+        try {
+            bdConn = await StartConnection();
+
+            let valoresQuery: Array<string> = [];
+            if (nome != undefined) valoresQuery.push(`nome = '${nome}'`);
+            if (fator != undefined) valoresQuery.push(`fator = '${fator}'`);
+            if (offset != undefined) valoresQuery.push(`valor_offset = '${offset}'`);
+
+            const resultQuery = await Query<IAtualizarParametro>(
+                bdConn,
+                `update tipo_parametro set ${valoresQuery.join(", ")} where id = ${id};`,
+                []
+            );
+
+            const retorno = {
+                errors: [],
+                msg: ["parâmetro atualizado com sucesso"],
+                data: null
+            } as IResponsePadrao;
+            res.status(200).send(retorno);
+        } catch (err) {
+            const retorno = {
+                errors: [(err as Error).message],
+                msg: ["falha ao atualizar parâmetro"],
+                data: null
+            } as IResponsePadrao;
+            res.status(500).send(retorno);
+        }
+        if (bdConn) EndConnection(bdConn);
+    }
+);
 
 
 export {
