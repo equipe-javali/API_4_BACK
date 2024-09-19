@@ -239,7 +239,7 @@ router.get(
  *     responses:
  *       200:
  *         description: Estação atualizada com sucesso
- *       404:
+ *       400:
  *         description: ID inválido
  *       500:
  *         description: Falha ao atualizar estação
@@ -262,7 +262,7 @@ router.patch(
                 msg: [`o id (${id}) é inválido`],
                 data: null
             } as IResponsePadrao;
-            res.status(404).send(retorno);
+            res.status(400).send(retorno);
             return;
         }
 
