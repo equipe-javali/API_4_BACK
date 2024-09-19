@@ -22,16 +22,12 @@ function EndConnection(conn: Pool) {
 }
 
 async function Query<T extends QueryResultRow = any>(conn: Pool, query: string, valores: Array<any>): Promise<QueryResultRow> {
-    try {
-        const result = await conn.query<T>(
-            query,
-            valores
-        );
+    const result = await conn.query<T>(
+        query,
+        valores
+    );
 
-        return result;
-    } catch (err) {
-        throw err;
-    }
+    return result;
 }
 
 export {

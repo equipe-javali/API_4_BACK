@@ -1,9 +1,10 @@
 import cors from "cors";
 import express from "express";
 import swaggerUi from "swagger-ui-express";
+import { swaggerDocs } from "./swagger/swagger";
 import { EstacaoRouter } from "./endpoints/Estacao";
 import { UsuarioRouter } from "./endpoints/Usuario";
-import { swaggerDocs } from "./swagger/swagger";
+import { ParametroRouter } from "./endpoints/Parametro";
 
 require("dotenv-ts").config();
 
@@ -17,6 +18,7 @@ app.use(express.json());
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 app.use("/estacao", EstacaoRouter);
+app.use("/parametro", ParametroRouter);
 app.use("/usuario", UsuarioRouter);
 
 app.listen(
