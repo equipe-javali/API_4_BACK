@@ -1,11 +1,40 @@
 import express, { Request, Response } from "express";
-import { StartConnection, EndConnection, Query } from "../services/postgres";
-import { Pool } from "pg";
 import { IAtualizarEstacao, ICadastrarEstacao, IDeletarEstacao, IListarEstacao } from "../types/Estacao";
 import { IResponsePadrao } from "../types/Response";
+import { Pool } from "pg";
+import { StartConnection, EndConnection, Query } from "../services/postgres";
 
 const router = express.Router();
 
+/**
+ * @swagger
+ * /estacao/cadastrar:
+ *   post:
+ *     tags: [Estacao]
+ *     summary: Cadastra uma nova estação
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               nome:
+ *                 type: string
+ *               endereco:
+ *                 type: string
+ *               latitude:
+ *                 type: number
+ *               longitude:
+ *                 type: number
+ *               mac_address:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Estação cadastrada com sucesso
+ *       500:
+ *         description: Falha ao cadastrar estação
+ */
 router.post(
     "/cadastrar",
     async function (req: Request, res: Response) {
@@ -44,7 +73,27 @@ router.post(
         if (bdConn) EndConnection(bdConn);
     }
 );
-
+/**
+ * @swagger
+ * /estacao/{estacaoId}:
+ *   get:
+ *     tags: [Estacao]
+ *     summary: Obtém uma estação pelo ID
+ *     parameters:
+ *       - name: estacaoId
+ *         in: path
+ *         required: true
+ *         description: ID da estação a ser obtida
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Estação listada com sucesso
+ *       404:
+ *         description: Estação não encontrada
+ *       500:
+ *         description: Falha ao listar estação
+ */
 router.get(
     "/:estacaoId",
     async function (req: Request, res: Response) {
@@ -101,7 +150,31 @@ router.get(
         if (bdConn) EndConnection(bdConn);
     }
 );
-
+/**
+ * @swagger
+ * /estacao/{quantidade}/{pagina}:
+ *   get:
+ *     tags: [Estacao]
+ *     summary: Lista estações com paginação
+ *     parameters:
+ *       - name: quantidade
+ *         in: path
+ *         required: true
+ *         description: Número de estações a serem retornadas
+ *         schema:
+ *           type: integer
+ *       - name: pagina
+ *         in: path
+ *         required: true
+ *         description: Número da página
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Estações listadas com sucesso
+ *       500:
+ *         description: Falha ao listar estações
+ */
 router.get(
     "/:quantidade/:pagina",
     async function (req: Request, res: Response) {
@@ -138,7 +211,39 @@ router.get(
         if (bdConn) EndConnection(bdConn);
     }
 );
-
+/**
+ * @swagger
+ * /estacao/atualizar:
+ *   patch:
+ *     tags: [Estacao]
+ *     summary: Atualiza uma estação
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: integer
+ *               nome:
+ *                 type: string
+ *               endereco:
+ *                 type: string
+ *               latitude:
+ *                 type: number
+ *               longitude:
+ *                 type: number
+ *               mac_address:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Estação atualizada com sucesso
+ *       404:
+ *         description: ID inválido
+ *       500:
+ *         description: Falha ao atualizar estação
+ */
 router.patch(
     "/atualizar",
     async function (req: Request, res: Response) {
@@ -195,7 +300,27 @@ router.patch(
         if (bdConn) EndConnection(bdConn);
     }
 );
-
+/**
+ * @swagger
+ * /estacao/deletar:
+ *   delete:
+ *     tags: [Estacao]
+ *     summary: Deleta uma estação
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: integer
+ *     responses:
+ *       200:
+ *         description: Estação deletada com sucesso
+ *       500:
+ *         description: Falha ao deletar estação
+ */
 router.delete(
     "/deletar",
     async function (req: Request, res: Response) {

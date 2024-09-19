@@ -1,8 +1,9 @@
-import express from "express";
 import cors from "cors";
-
+import express from "express";
+import swaggerUi from "swagger-ui-express";
 import { EstacaoRouter } from "./endpoints/Estacao";
 import { UsuarioRouter } from "./endpoints/Usuario";
+import { swaggerDocs } from "./swagger/swagger";
 
 require("dotenv-ts").config();
 
@@ -13,15 +14,16 @@ app.use(require("body-parser").urlencoded({ extended: false }));
 app.use(cors());
 app.use(express.json());
 
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+
+app.use("/estacao", EstacaoRouter);
+app.use("/usuario", UsuarioRouter);
+
 app.listen(
   PORT,
   function () {
     console.log(`API aberta na porta ${PORT}`);
   }
 );
-
-app.use("/estacao", EstacaoRouter);
-app.use("/usuario", UsuarioRouter);
-
 
 module.exports = app;
