@@ -3,10 +3,10 @@
 import express, { Request, Response } from "express";
 import { StartConnection, EndConnection, Query } from "../services/postgres";
 import { Pool } from "pg";
-import { ICadastrarUsuario, IDeletarUsuario } from "../types/Usuario";
+import { ICadastrarUsuario, IDeletarUsuario, IAtualizarUsuario, IListarUsuario } from "../types/Usuario";
 import { IResponsePadrao } from "../types/Response";
 const { HashPassword } = require("../services/bcrypt");
-import { authenticateUser } from "../services/auth";
+import { authenticateUser, updateUser } from "../services/auth";
 
 
 const router = express.Router();
@@ -160,6 +160,35 @@ router.get(
     }
 );
 
+router.patch(
+    "/atualizar",
+    async (req: Request, res: Response) => {
+        const { id, nome, email, senha } = req.body as IAtualizarUsuario;
+
+        let bdConn: Pool | null = null;
+        try {
+            bdConn = await StartConnection();
+
+            // Atualizar o usuário com o novo nome, email e senha
+            const updatedUser = await updateUser(id.toString(), bdConn, nome, email, senha);
+
+            const retorno = {
+                errors: [],
+                msg: ["Usuário atualizado com sucesso"],
+                data: updatedUser
+            } as IResponsePadrao;
+            res.status(200).send(retorno);
+        } catch (err) {
+            const retorno = {
+                errors: [(err as Error).message],
+                msg: ["Falha ao atualizar usuário"],
+                data: null
+            } as IResponsePadrao;
+            res.status(500).send(retorno);
+        }
+        if (bdConn) EndConnection(bdConn);
+    }
+);
 
 router.delete(
     "/deletar",
@@ -183,7 +212,7 @@ router.delete(
             const retorno = {
                 errors: [],
                 msg: ["Usuário deletado com sucesso"],
-                data: resultQuery.rows[0]
+                data: null
             } as IResponsePadrao;
             res.status(200).send(retorno);
         } catch (err) {
