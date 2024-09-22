@@ -11,6 +11,78 @@ import { authenticateUser, updateUser } from "../services/auth";
 
 const router = express.Router();
 
+
+/**
+ * @swagger
+ * /usuario/cadastrar:
+ *   post:
+ *     tags: [Usuario]
+ *     summary: Cadastra um novo usuário
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               nome:
+ *                 type: string
+ *                 example: "João Silva"
+ *               email:
+ *                 type: string
+ *                 example: "joao.silva@example.com"
+ *               senha:
+ *                 type: string
+ *                 example: "senha123"
+ *     responses:
+ *       200:
+ *         description: Usuário cadastrado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 errors:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                 msg:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                       example: 1
+ *                     nome:
+ *                       type: string
+ *                       example: "João Silva"
+ *                     email:
+ *                       type: string
+ *                       example: "joao.silva@example.com"
+ *                     senha:
+ *                       type: string
+ *                       example: "$2b$10$niheCTutS6DzYR1yTC8Yq.N4G.XUj5nEGyC2F3v18r6b/uHWJTSw6"
+ *       500:
+ *         description: Falha ao cadastrar usuário
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 errors:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                 msg:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                 data:
+ *                   type: null
+ */
 router.post(
     "/cadastrar", 
     async (req: Request, res: Response) => {
@@ -88,7 +160,7 @@ router.get(
         try {
             bdConn = await StartConnection();
 
-            const resultQuery = await Query(
+            const resultQuery = await Query<IListarUsuario>(
                 bdConn,
                 "SELECT id, nome, email FROM usuario;",
                 []
@@ -112,7 +184,6 @@ router.get(
     }
 );
 
-
 // Rota para visualizar perfil do usuário pelo ID
 router.get(
     "/:usuarioId",
@@ -123,7 +194,7 @@ router.get(
         try {
             bdConn = await StartConnection();
 
-            const resultQuery = await Query(
+            const resultQuery = await Query<IListarUsuario>(
                 bdConn,
                 "SELECT id, nome, email FROM usuario WHERE id = $1;",
                 [userId]
@@ -141,12 +212,8 @@ router.get(
             const retorno = {
                 errors: [],
                 msg: ["Perfil do usuário"],
-                data: {
-                    id: userData.id,
-                    nome: userData.nome,
-                    email: userData.email
-                }
-            } as IResponsePadrao;
+                data: userData
+                } as IResponsePadrao;
             res.status(200).send(retorno);
         } catch (err) {
             const retorno = {
