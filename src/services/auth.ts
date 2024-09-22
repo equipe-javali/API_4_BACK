@@ -28,10 +28,12 @@ export async function authenticateUser(email: string, senha: string, bdConn: Poo
 }
 
 
+
 export async function updateUser(id: string, bdConn: Pool, novoNome?: string, novoEmail?: string, novaSenha?: string) {
     const updates = [];
     const values = [];
     let index = 1;
+    let senhaHashed: string | undefined;
 
     if (novoNome) {
         updates.push(`nome = $${index++}`);
@@ -42,7 +44,7 @@ export async function updateUser(id: string, bdConn: Pool, novoNome?: string, no
         values.push(novoEmail);
     }
     if (novaSenha) {
-        const senhaHashed = HashPassword(novaSenha);
+        senhaHashed = HashPassword(novaSenha);
         updates.push(`senha = $${index++}`);
         values.push(senhaHashed);
     }
@@ -54,7 +56,7 @@ export async function updateUser(id: string, bdConn: Pool, novoNome?: string, no
     values.push(id);
     const resultQuery = await Query(
         bdConn,
-        `UPDATE usuario SET ${updates.join(", ")} WHERE id = $${index} RETURNING id, nome, email;`,
+        `UPDATE usuario SET ${updates.join(", ")} WHERE id = $${index} RETURNING id, nome, email, senha;`,
         values
     );
 

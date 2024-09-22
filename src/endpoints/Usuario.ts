@@ -65,32 +65,24 @@ const router = express.Router();
  *                     senha:
  *                       type: string
  *                       example: "$2b$10$niheCTutS6DzYR1yTC8Yq.N4G.XUj5nEGyC2F3v18r6b/uHWJTSw6"
+ *       400:
+ *         description: Requisição inválida 
  *       500:
  *         description: Falha ao cadastrar usuário
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 errors:
- *                   type: array
- *                   items:
- *                     type: string
- *                 msg:
- *                   type: array
- *                   items:
- *                     type: string
- *                 data:
- *                   type: null
  */
 router.post(
     "/cadastrar", 
     async (req: Request, res: Response) => {
-        const {
-            nome,
-            email,
-            senha
-        } = req.body as ICadastrarUsuario;
+        const { nome, email, senha } = req.body as ICadastrarUsuario;
+
+        if (!nome || !email || !senha) {
+            const retorno: IResponsePadrao = {
+                errors: ["Nome, email e senha são obrigatórios"],
+                msg: ["Requisição inválida"],
+                data: null
+            };
+            return res.status(400).send(retorno);
+        }
 
         let bdConn: Pool | null = null;
         try {
@@ -105,24 +97,76 @@ router.post(
                 [nome, email, senhaHashed]
             );
 
-            const retorno = {
+            const retorno: IResponsePadrao = {
                 errors: [],
                 msg: ["Usuário cadastrado com sucesso"],
                 data: resultQuery.rows[0]
-            } as IResponsePadrao;
+            };
             res.status(200).send(retorno);
         } catch (err) {
-            const retorno = {
-                errors: [(err as Error).message],
-                msg: ["Falha ao cadastrar usuário"],	
+            const retorno: IResponsePadrao = {
+                errors: [err instanceof Error ? err.message : "Erro desconhecido"],
+                msg: ["Falha ao cadastrar usuário"],
                 data: null
-            } as IResponsePadrao;
+            };
             res.status(500).send(retorno);
         }
         if (bdConn) EndConnection(bdConn);
     }
 );
 
+/**
+ * @swagger
+ * /usuario/login:
+ *   post:
+ *     tags: [Usuario]
+ *     summary: Realiza o login de um usuário
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: "joao.silva@example.com"
+ *               senha:
+ *                 type: string
+ *                 example: "senha123"
+ *     responses:
+ *       200:
+ *         description: Login bem-sucedido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 errors:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                 msg:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                       example: 1
+ *                     nome:
+ *                       type: string
+ *                       example: "João Silva"
+ *                     email:
+ *                       type: string
+ *                       example: "joao.silva@example.com"
+ *       401:
+ *         description: Senha inválida
+ *       404:
+ *         description: Usuário não encontrado
+ */
 router.post(
     "/login",
     async (req: Request, res: Response) => {
@@ -134,25 +178,77 @@ router.post(
 
             const user = await authenticateUser(email, senha, bdConn);
 
-            const retorno = {
+            const retorno: IResponsePadrao = {
                 errors: [],
                 msg: ["Login bem-sucedido"],
                 data: user
-            } as IResponsePadrao;
+            };
             res.status(200).send(retorno);
         } catch (err) {
-            const retorno = {
-                errors: [(err as Error).message],
-                msg: ["Falha ao fazer login"],
+            let statusCode = 500;
+            let msg = "Falha ao fazer login";
+
+            if (err instanceof Error) {
+                if (err.message === "Usuário não encontrado") {
+                    statusCode = 404;
+                    msg = err.message;
+                } else if (err.message === "Senha inválida") {
+                    statusCode = 401;
+                    msg = err.message;
+                }
+            }
+
+            const retorno: IResponsePadrao = {
+                errors: [err instanceof Error ? err.message : "Erro desconhecido"],
+                msg: [msg],
                 data: null
-            } as IResponsePadrao;
-            res.status(401).send(retorno);
+            };
+            res.status(statusCode).send(retorno);
         }
         if (bdConn) EndConnection(bdConn);
     }
 );
 
 
+/**
+ * @swagger
+ * /usuario/usuarios:
+ *   get:
+ *     tags: [Usuario]
+ *     summary: Lista todos os usuários
+ *     responses:
+ *       200:
+ *         description: Lista de usuários
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 errors:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                 msg:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                         example: 1
+ *                       nome:
+ *                         type: string
+ *                         example: "João Silva"
+ *                       email:
+ *                         type: string
+ *                         example: "joao.silva@example.com"
+ *       500:
+ *         description: Falha ao listar usuários
+ */
 router.get(
     "/usuarios",
     async (req: Request, res: Response) => {
@@ -184,7 +280,53 @@ router.get(
     }
 );
 
-// Rota para visualizar perfil do usuário pelo ID
+
+/**
+ * @swagger
+ * /usuario/{usuarioId}:
+ *   get:
+ *     tags: [Usuario]
+ *     summary: Visualiza o perfil de um usuário pelo ID
+ *     parameters:
+ *       - in: path
+ *         name: usuarioId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID do usuário
+ *     responses:
+ *       200:
+ *         description: Perfil do usuário
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 errors:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                 msg:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                       example: 1
+ *                     nome:
+ *                       type: string
+ *                       example: "João Silva"
+ *                     email:
+ *                       type: string
+ *                       example: "joao.silva@example.com"
+ *       404:
+ *         description: Usuário não encontrado
+ *       500:
+ *         description: Falha ao visualizar perfil do usuário
+ */
 router.get(
     "/:usuarioId",
     async (req: Request, res: Response) => {
@@ -226,7 +368,75 @@ router.get(
         if (bdConn) EndConnection(bdConn);
     }
 );
-
+/**
+ * @swagger
+ * /usuario/atualizar:
+ *   patch:
+ *     tags: [Usuario]
+ *     summary: Atualiza um usuário existente
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - id
+ *             properties:
+ *               id:
+ *                 type: integer
+ *                 description: "ID do usuário (obrigatório)"
+ *                 example: 1
+ *               nome:
+ *                 type: string
+ *                 description: "Nome do usuário (opcional)"
+ *                 example: "João Silva"
+ *               email:
+ *                 type: string
+ *                 description: "Email do usuário (opcional)"
+ *                 example: "joao.silva@example.com"
+ *               senha:
+ *                 type: string
+ *                 description: "Nova senha do usuário (opcional)"
+ *                 example: "novaSenha123"
+ *     responses:
+ *       200:
+ *         description: Usuário atualizado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 errors:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                 msg:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                       example: 1
+ *                     nome:
+ *                       type: string
+ *                       example: "João Silva"
+ *                     email:
+ *                       type: string
+ *                       example: "joao.silva@example.com"
+ *                     senha:
+ *                       type: string
+ *                       example: "$2b$10$niheCTutS6DzYR1yTC8Yq.N4G.XUj5nEGyC2F3v18r6b/uHWJTSw6"
+ *       400:
+ *         description: Nenhum dado para atualizar
+ *       404:
+ *         description: Usuário não encontrado
+ *       500:
+ *         description: Falha ao atualizar usuário
+ */
 router.patch(
     "/atualizar",
     async (req: Request, res: Response) => {
@@ -239,24 +449,63 @@ router.patch(
             // Atualizar o usuário com o novo nome, email e senha
             const updatedUser = await updateUser(id.toString(), bdConn, nome, email, senha);
 
-            const retorno = {
+            const retorno: IResponsePadrao = {
                 errors: [],
                 msg: ["Usuário atualizado com sucesso"],
                 data: updatedUser
-            } as IResponsePadrao;
+            };
             res.status(200).send(retorno);
         } catch (err) {
-            const retorno = {
-                errors: [(err as Error).message],
-                msg: ["Falha ao atualizar usuário"],
+            let statusCode = 500;
+            let msg = "Falha ao atualizar usuário";
+
+            if (err instanceof Error) {
+                if (err.message === "Nenhum dado para atualizar") {
+                    statusCode = 400;
+                    msg = err.message;
+                } else if (err.message === "Usuário não encontrado") {
+                    statusCode = 404;
+                    msg = err.message;
+                }
+            }
+
+            const retorno: IResponsePadrao = {
+                errors: [err instanceof Error ? err.message : "Erro desconhecido"],
+                msg: [msg],
                 data: null
-            } as IResponsePadrao;
-            res.status(500).send(retorno);
+            };
+            res.status(statusCode).send(retorno);
         }
         if (bdConn) EndConnection(bdConn);
     }
 );
 
+
+/**
+ * @swagger
+ * /usuario/deletar:
+ *   delete:
+ *     tags: [Usuario]
+ *     summary: Deleta um usuário existente
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: integer
+ *                 example: 1
+ *     responses:
+ *       200:
+ *         description: Usuário deletado com sucesso
+ *       400:
+ *         description: ID inválido
+ *       500:
+ *         description: Falha ao excluir usuário
+ *         
+ */
 router.delete(
     "/deletar",
     async (req: Request, res: Response) => {
@@ -273,7 +522,13 @@ router.delete(
             );
 
             if (resultQuery.rows.length === 0) {
-                throw new Error("Usuário não encontrado");
+                const retorno = {
+                    errors: [],
+                    msg: [`id (${id}) é inválido`],
+                    data: null
+                } as IResponsePadrao;
+                res.status(400).send(retorno);
+                return;
             }
 
             const retorno = {
