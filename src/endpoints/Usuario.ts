@@ -1,7 +1,9 @@
+//usuario.ts
+
 import express, { Request, Response } from "express";
 import { StartConnection, EndConnection, Query } from "../services/postgres";
 import { Pool } from "pg";
-import { ICadastrarUsuario } from "../types/Usuario";
+import { ICadastrarUsuario, IDeletarUsuario } from "../types/Usuario";
 import { IResponsePadrao } from "../types/Response";
 const { HashPassword } = require("../services/bcrypt");
 import { authenticateUser } from "../services/auth";
@@ -78,6 +80,7 @@ router.post(
     }
 );
 
+
 router.get(
     "/usuarios",
     async (req: Request, res: Response) => {
@@ -149,6 +152,44 @@ router.get(
             const retorno = {
                 errors: [(err as Error).message],
                 msg: ["Falha ao visualizar perfil do usuário"],
+                data: null
+            } as IResponsePadrao;
+            res.status(500).send(retorno);
+        }
+        if (bdConn) EndConnection(bdConn);
+    }
+);
+
+
+router.delete(
+    "/deletar",
+    async (req: Request, res: Response) => {
+        const { id } = req.body as IDeletarUsuario;
+
+        let bdConn: Pool | null = null;
+        try {
+            bdConn = await StartConnection();
+
+            const resultQuery = await Query<IDeletarUsuario>(
+                bdConn,
+                "DELETE FROM usuario WHERE id = $1 RETURNING id, nome, email;",
+                [id]
+            );
+
+            if (resultQuery.rows.length === 0) {
+                throw new Error("Usuário não encontrado");
+            }
+
+            const retorno = {
+                errors: [],
+                msg: ["Usuário deletado com sucesso"],
+                data: resultQuery.rows[0]
+            } as IResponsePadrao;
+            res.status(200).send(retorno);
+        } catch (err) {
+            const retorno = {
+                errors: [(err as Error).message],
+                msg: ["Falha ao excluir usuário"],
                 data: null
             } as IResponsePadrao;
             res.status(500).send(retorno);
