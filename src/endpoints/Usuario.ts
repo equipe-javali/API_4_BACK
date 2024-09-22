@@ -4,6 +4,8 @@ import { Pool } from "pg";
 import { ICadastrarUsuario } from "../types/Usuario";
 import { IResponsePadrao } from "../types/Response";
 const { HashPassword } = require("../services/bcrypt");
+import { authenticateUser } from "../services/auth";
+
 
 const router = express.Router();
 
@@ -42,6 +44,35 @@ router.post(
                 data: null
             } as IResponsePadrao;
             res.status(500).send(retorno);
+        }
+        if (bdConn) EndConnection(bdConn);
+    }
+);
+
+router.post(
+    "/login",
+    async (req: Request, res: Response) => {
+        const { email, senha } = req.body;
+
+        let bdConn: Pool | null = null;
+        try {
+            bdConn = await StartConnection();
+
+            const user = await authenticateUser(email, senha, bdConn);
+
+            const retorno = {
+                errors: [],
+                msg: ["Login bem-sucedido"],
+                data: user
+            } as IResponsePadrao;
+            res.status(200).send(retorno);
+        } catch (err) {
+            const retorno = {
+                errors: [(err as Error).message],
+                msg: ["Falha ao fazer login"],
+                data: null
+            } as IResponsePadrao;
+            res.status(401).send(retorno);
         }
         if (bdConn) EndConnection(bdConn);
     }
