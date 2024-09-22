@@ -47,6 +47,38 @@ router.post(
     }
 );
 
+router.get(
+    "/usuarios",
+    async (req: Request, res: Response) => {
+        let bdConn: Pool | null = null;
+        try {
+            bdConn = await StartConnection();
+
+            const resultQuery = await Query(
+                bdConn,
+                "SELECT id, nome, email FROM usuario;",
+                []
+            );
+
+            const retorno = {
+                errors: [],
+                msg: ["Lista de usuários"],
+                data: resultQuery.rows
+            } as IResponsePadrao;
+            res.status(200).send(retorno);
+        } catch (err) {
+            const retorno = {
+                errors: [(err as Error).message],
+                msg: ["Falha ao listar usuários"],
+                data: null
+            } as IResponsePadrao;
+            res.status(500).send(retorno);
+        }
+        if (bdConn) EndConnection(bdConn);
+    }
+);
+
+
 // Rota para visualizar perfil do usuário pelo ID
 router.get(
     "/:usuarioId",
@@ -93,6 +125,7 @@ router.get(
         if (bdConn) EndConnection(bdConn);
     }
 );
+
 
 export {
     router as UsuarioRouter
