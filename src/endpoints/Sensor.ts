@@ -1,7 +1,7 @@
 import express, { Request, Response } from "express";
 import { StartConnection, EndConnection, Query } from "../services/postgres";
 import { Pool } from "pg";
-import { IAtualizarSensor, ICadastrarSensor, IListarSensor } from "../types/Sensor";
+import { IAtualizarSensor, ICadastrarSensor, IDeletarSensor, IListarSensor } from "../types/Sensor";
 import { IResponsePadrao } from "../types/Response";
 
 const router = express.Router();
@@ -276,6 +276,62 @@ router.patch(
             const retorno = {
                 errors: [(err as Error).message],
                 msg: ["Falha ao atualizar sensor"],
+                data: null
+            } as IResponsePadrao;
+            res.status(500).send(retorno);
+        }
+        if (bdConn) EndConnection(bdConn);
+    }
+);
+
+/**
+ * @swagger
+ * /sensor/deletar:
+ *   delete:
+ *     tags: [Sensor]
+ *     summary: Deleta uma sensor
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: integer
+ *     responses:
+ *       200:
+ *         description: Sensor deletado com sucesso
+ *       500:
+ *         description: Falha ao deletar sensor
+ */
+router.delete(
+    "/deletar",
+    async function (req: Request, res: Response) {
+        const {
+            id
+        } = req.body as IDeletarSensor;
+
+        let bdConn: Pool | null = null;
+        try {
+            bdConn = await StartConnection();
+
+            const resultQuery = await Query<IDeletarSensor>(
+                bdConn,
+                `delete from sensor where id = ${id};`,
+                []
+            );
+
+            const retorno = {
+                errors: [],
+                msg: ["Sensor deletado com sucesso"],
+                data: null
+            } as IResponsePadrao;
+            res.status(200).send(retorno);
+        } catch (err) {
+            const retorno = {
+                errors: [(err as Error).message],
+                msg: ["Falha ao deletar sensor"],
                 data: null
             } as IResponsePadrao;
             res.status(500).send(retorno);
