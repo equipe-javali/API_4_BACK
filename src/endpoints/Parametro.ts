@@ -57,7 +57,7 @@ router.post(
 
             const resultQuery = await Query<ICadastrarParametro>(
                 bdConn,
-                "insert into tipo_parametro (id_unidade, nome, fator, valor_offset, nome_json) values ($1, $2, $3, $4, $5);",
+                "insert into parametro (id_unidade, nome, fator, valor_offset, nome_json) values ($1, $2, $3, $4, $5);",
                 [unidade_medida.id, nome, fator, offset, ""]
             );
 
@@ -121,7 +121,7 @@ router.get(
 
             const resultQuery = await Query<IListarParametro>(
                 bdConn,
-                `select * from tipo_parametro where id = ${id};`,
+                `select * from parametro where id = ${id};`,
                 []
             );
 
@@ -193,7 +193,7 @@ router.get(
 
             const resultQuery = await Query<IListarParametro>(
                 bdConn,
-                "select * from tipo_parametro limit $1 offset $2;",
+                "select * from parametro limit $1 offset $2;",
                 [quantidade, pagina]
             );
 
@@ -277,7 +277,7 @@ router.patch(
 
             const resultQuery = await Query<IAtualizarParametro>(
                 bdConn,
-                `update tipo_parametro set ${valoresQuery.join(", ")} where id = ${id};`,
+                `update parametro set ${valoresQuery.join(", ")} where id = ${id};`,
                 []
             );
 
@@ -332,7 +332,7 @@ router.delete(
 
             const resultQuery = await Query<IDeletarParametro>(
                 bdConn,
-                `delete from tipo_parametro where id = ${id};`,
+                `delete from parametro where id = ${id};`,
                 []
             );
 
