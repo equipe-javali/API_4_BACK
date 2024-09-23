@@ -14,3 +14,7 @@ export interface IAtualizarSensor {
     nome: string,
     id_parametro: number
 };
+
+export interface IDeletarSensor {
+    id: number
+};
