@@ -144,6 +144,68 @@ router.get(
     }
 );
 
+/**
+ * @swagger
+ * /sensor/{quantidade}/{pagina}:
+ *   get:
+ *     tags: [Sensor]
+ *     summary: Lista sensor com paginação
+ *     parameters:
+ *       - name: quantidade
+ *         in: path
+ *         required: true
+ *         description: Número de sensores a serem retornados
+ *         schema:
+ *           type: integer
+ *       - name: pagina
+ *         in: path
+ *         required: true
+ *         description: Número da página
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Sensores listados com sucesso
+ *       500:
+ *         description: Falha ao listar sensores
+ */
+router.get(
+    "/:quantidade/:pagina",
+    async function (req: Request, res: Response) {
+        const quantidade: number = parseInt(req.params.quantidade);
+        const pagina: number = parseInt(req.params.pagina);
+
+        let bdConn: Pool | null = null;
+        try {
+            bdConn = await StartConnection();
+
+            const resultQuery = await Query<IListarSensor>(
+                bdConn,
+                "select * from sensor limit $1 offset $2;",
+                [quantidade, pagina]
+            );
+
+            const retorno = {
+                errors: [],
+                msg: ["Sensores listados com sucesso"],
+                data: {
+                    rows: resultQuery.rows,
+                    fields: resultQuery.fields
+                }
+            } as IResponsePadrao;
+            res.status(200).send(retorno);
+        } catch (err) {
+            const retorno = {
+                errors: [(err as Error).message],
+                msg: ["Falha ao listar sensores"],
+                data: null
+            } as IResponsePadrao;
+            res.status(500).send(retorno);
+        }
+        if (bdConn) EndConnection(bdConn);
+    }
+);
+
 export {
     router as SensorRouter
 };
