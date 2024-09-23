@@ -1,7 +1,7 @@
 import express, { Request, Response } from "express";
 import { StartConnection, EndConnection, Query } from "../services/postgres";
 import { Pool } from "pg";
-import { ICadastrarSensor, IListarSensor } from "../types/Sensor";
+import { IAtualizarSensor, ICadastrarSensor, IListarSensor } from "../types/Sensor";
 import { IResponsePadrao } from "../types/Response";
 
 const router = express.Router();
@@ -198,6 +198,84 @@ router.get(
             const retorno = {
                 errors: [(err as Error).message],
                 msg: ["Falha ao listar sensores"],
+                data: null
+            } as IResponsePadrao;
+            res.status(500).send(retorno);
+        }
+        if (bdConn) EndConnection(bdConn);
+    }
+);
+
+/**
+ * @swagger
+ * /sensor/atualizar:
+ *   patch:
+ *     tags: [Sensor]
+ *     summary: Atualiza um sensor
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: integer
+ *               id_parametro:
+ *                 type: integer
+ *               nome:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Sensor atualizado com sucesso
+ *       400:
+ *         description: ID inválido
+ *       500:
+ *         description: Falha ao atualizar sensor
+ */
+router.patch(
+    "/atualizar",
+    async function (req: Request, res: Response) {
+        const {
+            id,
+            nome,
+            id_parametro
+        } = req.body as IAtualizarSensor;
+
+        if (id == undefined || id == 0) {
+            const retorno = {
+                errors: [],
+                msg: [`O id (${id}) é inválido`],
+                data: null
+            } as IResponsePadrao;
+            res.status(404).send(retorno);
+            return;
+        }
+
+        let bdConn: Pool | null = null;
+        try {
+            bdConn = await StartConnection();
+
+            let valoresQuery: Array<string> = [];
+            if (nome != undefined) valoresQuery.push(`nome = '${nome}'`);
+            if (id_parametro != undefined) valoresQuery.push(`id_parametro = '${id_parametro}'`);
+
+            const resultQuery = await Query<IAtualizarSensor>(
+                bdConn,
+                `update sensor set ${valoresQuery.join(", ")} where id = ${id};`,
+                []
+            );
+
+            const retorno = {
+                errors: [],
+                msg: ["Sensor atualizada com sucesso"],
+                data: null
+            } as IResponsePadrao;
+            res.status(200).send(retorno);
+        } catch (err) {
+            const retorno = {
+                errors: [(err as Error).message],
+                msg: ["Falha ao atualizar sensor"],
                 data: null
             } as IResponsePadrao;
             res.status(500).send(retorno);
