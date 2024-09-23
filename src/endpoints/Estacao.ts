@@ -89,6 +89,8 @@ router.post(
  *     responses:
  *       200:
  *         description: Estação listada com sucesso
+ *       400:
+ *         description: ID inválido
  *       404:
  *         description: Estação não encontrada
  *       500:
