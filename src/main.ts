@@ -6,6 +6,7 @@ import { EstacaoRouter } from "./endpoints/Estacao";
 import { UsuarioRouter } from "./endpoints/Usuario";
 import { ParametroRouter } from "./endpoints/Parametro";
 import { UnidadeMedidaRouter } from "./endpoints/UnidadeMedida";
+import { SensorRouter } from "./endpoints/Sensor";
 
 require("dotenv-ts").config();
 
@@ -22,6 +23,7 @@ app.use("/estacao", EstacaoRouter);
 app.use("/parametro", ParametroRouter);
 app.use("/unidademedida", UnidadeMedidaRouter);
 app.use("/usuario", UsuarioRouter);
+app.use("/sensor", SensorRouter);
 
 app.listen(
   PORT,
