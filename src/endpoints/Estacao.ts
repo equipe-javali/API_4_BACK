@@ -52,14 +52,14 @@ router.post(
 
             const resultQuery = await Query<ICadastrarEstacao>(
                 bdConn,
-                "insert into estacao (nome, endereco, latitude, longitude, mac_address) values ($1, $2, $3, $4, $5);",
+                "insert into estacao (nome, endereco, latitude, longitude, mac_address) values ($1, $2, $3, $4, $5) returning id;",
                 [nome, endereco, latitude, longitude, mac_address]
             );
 
             const retorno = {
                 errors: [],
                 msg: ["estação cadastrada com sucesso"],
-                data: null
+                data: resultQuery.rows[0]
             } as IResponsePadrao;
             res.status(200).send(retorno);
         } catch (err) {
@@ -73,6 +73,7 @@ router.post(
         if (bdConn) EndConnection(bdConn);
     }
 );
+
 /**
  * @swagger
  * /estacao/{estacaoId}:
@@ -152,6 +153,7 @@ router.get(
         if (bdConn) EndConnection(bdConn);
     }
 );
+
 /**
  * @swagger
  * /estacao/{quantidade}/{pagina}:
@@ -213,6 +215,7 @@ router.get(
         if (bdConn) EndConnection(bdConn);
     }
 );
+
 /**
  * @swagger
  * /estacao/atualizar:
@@ -302,6 +305,7 @@ router.patch(
         if (bdConn) EndConnection(bdConn);
     }
 );
+
 /**
  * @swagger
  * /estacao/deletar:
@@ -350,6 +354,85 @@ router.delete(
             const retorno = {
                 errors: [(err as Error).message],
                 msg: ["falha ao deletar estação"],
+                data: null
+            } as IResponsePadrao;
+            res.status(500).send(retorno);
+        }
+        if (bdConn) EndConnection(bdConn);
+    }
+);
+
+/**
+ * @swagger
+ * /estacao/adicionarSensor:
+ *   post:
+ *     tags: [Estacao]
+ *     summary: Adiciona um sensor a uma estação
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id_estacao:
+ *                 type: number
+ *               id_sensor:
+ *                 type: number
+ *     responses:
+ *       200:
+ *         description: Sensor adicionado à estação com sucesso
+ *       500:
+ *         description: Falha ao adicionar sensor à estação
+ */
+router.post(
+    "/adicionarSensor",
+    async function (req: Request, res: Response) {
+        const {
+            id_estacao,
+            id_sensor
+        } = req.body;
+
+        if (id_estacao == undefined || id_estacao == 0) {
+            const retorno = {
+                errors: [],
+                msg: [`o id_estacao (${id_estacao}) é inválido`],
+                data: null
+            } as IResponsePadrao;
+            res.status(400).send(retorno);
+            return;
+        }
+
+        if (id_sensor == undefined || id_sensor == 0) {
+            const retorno = {
+                errors: [],
+                msg: [`o id_sensor (${id_sensor}) é inválido`],
+                data: null
+            } as IResponsePadrao;
+            res.status(400).send(retorno);
+            return;
+        }
+
+        let bdConn: Pool | null = null;
+        try {
+            bdConn = await StartConnection();
+
+            const resultQuery = await Query(
+                bdConn,
+                "insert into sensorestacao (id_estacao, id_sensor) values ($1, $2);",
+                [id_estacao, id_sensor]
+            );
+
+            const retorno = {
+                errors: [],
+                msg: ["sensor adicionado à estação com sucesso"],
+                data: null
+            } as IResponsePadrao;
+            res.status(200).send(retorno);
+        } catch (err) {
+            const retorno = {
+                errors: [(err as Error).message],
+                msg: ["falha ao adicionar sensor à estação"],
                 data: null
             } as IResponsePadrao;
             res.status(500).send(retorno);
