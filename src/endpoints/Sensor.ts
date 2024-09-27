@@ -42,14 +42,14 @@ router.post(
 
             const resultQuery = await Query<ICadastrarSensor>(
                 bdConn,
-                "insert into sensor (nome, id_parametro) values ($1, $2);",
+                "insert into sensor (nome, id_parametro) values ($1, $2) returning id;",
                 [nome, id_parametro]
             );
 
             const retorno = {
                 errors: [],
                 msg: ["Sensor cadastrado com sucesso"],
-                data: null
+                data: resultQuery.rows[0]
             } as IResponsePadrao;
             res.status(200).send(retorno);
         } catch (err) {
