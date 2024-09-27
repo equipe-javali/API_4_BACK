@@ -441,6 +441,85 @@ router.post(
     }
 );
 
+/**
+ * @swagger
+ * /estacao/removerSensor:
+ *   post:
+ *     tags: [Estacao]
+ *     summary: Remove um sensor a uma estação
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id_estacao:
+ *                 type: number
+ *               id_sensor:
+ *                 type: number
+ *     responses:
+ *       200:
+ *         description: Sensor removido da estação com sucesso
+ *       500:
+ *         description: Falha ao remover sensor da estação
+ */
+router.post(
+    "/removerSensor",
+    async function (req: Request, res: Response) {
+        const {
+            id_estacao,
+            id_sensor
+        } = req.body;
+
+        if (id_estacao == undefined || id_estacao == 0) {
+            const retorno = {
+                errors: [],
+                msg: [`o id_estacao (${id_estacao}) é inválido`],
+                data: null
+            } as IResponsePadrao;
+            res.status(400).send(retorno);
+            return;
+        }
+
+        if (id_sensor == undefined || id_sensor == 0) {
+            const retorno = {
+                errors: [],
+                msg: [`o id_sensor (${id_sensor}) é inválido`],
+                data: null
+            } as IResponsePadrao;
+            res.status(400).send(retorno);
+            return;
+        }
+
+        let bdConn: Pool | null = null;
+        try {
+            bdConn = await StartConnection();
+
+            const resultQuery = await Query(
+                bdConn,
+                "delete from sensorestacao where id_estacao = $1 and id_sensor = $2;",
+                [id_estacao, id_sensor]
+            );
+
+            const retorno = {
+                errors: [],
+                msg: ["sensor removido da estação com sucesso"],
+                data: null
+            } as IResponsePadrao;
+            res.status(200).send(retorno);
+        } catch (err) {
+            const retorno = {
+                errors: [(err as Error).message],
+                msg: ["falha ao remover sensor da estação"],
+                data: null
+            } as IResponsePadrao;
+            res.status(500).send(retorno);
+        }
+        if (bdConn) EndConnection(bdConn);
+    }
+);
+
 export {
     router as EstacaoRouter
 };
