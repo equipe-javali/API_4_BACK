@@ -207,11 +207,25 @@ router.get(
                 [quantidade, pagina]
             );
 
+            const estacoes = resultQuery.rows;
+
+            // Buscar sensores associados para cada estação
+            for (const estacao of estacoes) {
+                const sensoresQuery = await Query(
+                    bdConn,
+                    `select sensor.id, sensor.nome from sensor
+                     join sensorestacao on sensor.id = sensorestacao.id_sensor
+                     where sensorestacao.id_estacao = $1;`,
+                    [estacao.id]
+                );
+                estacao.sensores = sensoresQuery.rows;
+            }
+
             const retorno = {
                 errors: [],
                 msg: ["estações listadas com sucesso"],
                 data: {
-                    rows: resultQuery.rows,
+                    rows: estacoes,
                     fields: resultQuery.fields
                 }
             } as IResponsePadrao;
@@ -227,7 +241,6 @@ router.get(
         if (bdConn) EndConnection(bdConn);
     }
 );
-
 /**
  * @swagger
  * /estacao/atualizar:
@@ -270,7 +283,8 @@ router.patch(
             endereco,
             latitude,
             longitude,
-            mac_address
+            mac_address,
+            id_sensores 
         } = req.body as IAtualizarEstacao;
 
         if (id == undefined || id == 0) {
@@ -300,6 +314,25 @@ router.patch(
                 []
             );
 
+            // Atualizar sensores associados
+            if (id_sensores && Array.isArray(id_sensores)) {
+                // Remover sensores antigos
+                await Query(
+                    bdConn,
+                    "delete from sensorestacao where id_estacao = $1;",
+                    [id]
+                );
+
+                // Adicionar novos sensores
+                for (const sensorId of id_sensores) {
+                    await Query(
+                        bdConn,
+                        "insert into sensorestacao (id_estacao, id_sensor) values ($1, $2);",
+                        [id, sensorId]
+                    );
+                }
+            }
+
             const retorno = {
                 errors: [],
                 msg: ["estação atualizada com sucesso"],
@@ -317,7 +350,6 @@ router.patch(
         if (bdConn) EndConnection(bdConn);
     }
 );
-
 /**
  * @swagger
  * /estacao/deletar:
