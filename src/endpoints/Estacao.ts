@@ -133,11 +133,24 @@ router.get(
                 return;
             }
 
+            const estacao = resultQuery.rows[0];
+
+            // Buscar sensores associados
+            const sensoresQuery = await Query(
+                bdConn,
+                `select sensor.id, sensor.nome from sensor
+                 join sensorestacao on sensor.id = sensorestacao.id_sensor
+                 where sensorestacao.id_estacao = ${id};`,
+                []
+            );
+
+            estacao.sensores = sensoresQuery.rows;
+
             const retorno = {
                 errors: [],
                 msg: ["estação listada com sucesso"],
                 data: {
-                    rows: resultQuery.rows,
+                    rows: [estacao],
                     fields: resultQuery.fields
                 }
             } as IResponsePadrao;
@@ -153,7 +166,6 @@ router.get(
         if (bdConn) EndConnection(bdConn);
     }
 );
-
 /**
  * @swagger
  * /estacao/{quantidade}/{pagina}:
