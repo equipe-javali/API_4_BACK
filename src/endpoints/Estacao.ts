@@ -284,7 +284,7 @@ router.patch(
             latitude,
             longitude,
             mac_address,
-            id_sensores 
+            
         } = req.body as IAtualizarEstacao;
 
         if (id == undefined || id == 0) {
@@ -302,36 +302,19 @@ router.patch(
             bdConn = await StartConnection();
 
             let valoresQuery: Array<string> = [];
-            if (nome != undefined) valoresQuery.push(`nome = '${nome}'`);
-            if (endereco != undefined) valoresQuery.push(`endereco = '${endereco}'`);
-            if (latitude != undefined) valoresQuery.push(`latitude = '${latitude}'`);
-            if (longitude != undefined) valoresQuery.push(`longitude = '${longitude}'`);
-            if (mac_address != undefined) valoresQuery.push(`mac_address = '${mac_address}'`);
+            if (nome !== undefined) valoresQuery.push(`nome = '${nome}'`);
+            if (endereco !== undefined) valoresQuery.push(`endereco = '${endereco}'`);
+            if (latitude !== undefined) valoresQuery.push(`latitude = '${latitude}'`);
+            if (longitude !== undefined) valoresQuery.push(`longitude = '${longitude}'`);
+            if (mac_address !== undefined) valoresQuery.push(`mac_address = '${mac_address}'`);
 
-            const resultQuery = await Query<IAtualizarEstacao>(
+            await Query<IAtualizarEstacao>(
                 bdConn,
-                `update estacao set ${valoresQuery.join(", ")} where id = ${id};`,
+                `UPDATE estacao SET ${valoresQuery.join(", ")} WHERE id = ${id};`,
                 []
             );
 
-            // Atualizar sensores associados
-            if (id_sensores && Array.isArray(id_sensores)) {
-                // Remover sensores antigos
-                await Query(
-                    bdConn,
-                    "delete from sensorestacao where id_estacao = $1;",
-                    [id]
-                );
-
-                // Adicionar novos sensores
-                for (const sensorId of id_sensores) {
-                    await Query(
-                        bdConn,
-                        "insert into sensorestacao (id_estacao, id_sensor) values ($1, $2);",
-                        [id, sensorId]
-                    );
-                }
-            }
+            // Remova toda a lógica de gerenciamento de sensores daqui
 
             const retorno = {
                 errors: [],
@@ -350,6 +333,7 @@ router.patch(
         if (bdConn) EndConnection(bdConn);
     }
 );
+
 /**
  * @swagger
  * /estacao/deletar:
