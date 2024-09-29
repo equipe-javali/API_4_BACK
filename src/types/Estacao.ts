@@ -22,6 +22,7 @@ export interface IAtualizarEstacao {
     latitude: number,
     longitude: number,
     mac_address: string
+    id_sensores?: Array<number>
 };
 
 export interface IDeletarEstacao {

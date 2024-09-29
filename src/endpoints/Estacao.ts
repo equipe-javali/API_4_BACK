@@ -133,11 +133,24 @@ router.get(
                 return;
             }
 
+            const estacao = resultQuery.rows[0];
+
+            // Buscar sensores associados
+            const sensoresQuery = await Query(
+                bdConn,
+                `select sensor.id, sensor.nome from sensor
+                 join sensorestacao on sensor.id = sensorestacao.id_sensor
+                 where sensorestacao.id_estacao = ${id};`,
+                []
+            );
+
+            estacao.sensores = sensoresQuery.rows;
+
             const retorno = {
                 errors: [],
                 msg: ["estação listada com sucesso"],
                 data: {
-                    rows: resultQuery.rows,
+                    rows: [estacao],
                     fields: resultQuery.fields
                 }
             } as IResponsePadrao;
@@ -153,7 +166,6 @@ router.get(
         if (bdConn) EndConnection(bdConn);
     }
 );
-
 /**
  * @swagger
  * /estacao/{quantidade}/{pagina}:
@@ -195,11 +207,25 @@ router.get(
                 [quantidade, pagina]
             );
 
+            const estacoes = resultQuery.rows;
+
+            // Buscar sensores associados para cada estação
+            for (const estacao of estacoes) {
+                const sensoresQuery = await Query(
+                    bdConn,
+                    `select sensor.id, sensor.nome from sensor
+                     join sensorestacao on sensor.id = sensorestacao.id_sensor
+                     where sensorestacao.id_estacao = $1;`,
+                    [estacao.id]
+                );
+                estacao.sensores = sensoresQuery.rows;
+            }
+
             const retorno = {
                 errors: [],
                 msg: ["estações listadas com sucesso"],
                 data: {
-                    rows: resultQuery.rows,
+                    rows: estacoes,
                     fields: resultQuery.fields
                 }
             } as IResponsePadrao;
@@ -215,7 +241,6 @@ router.get(
         if (bdConn) EndConnection(bdConn);
     }
 );
-
 /**
  * @swagger
  * /estacao/atualizar:
@@ -258,7 +283,8 @@ router.patch(
             endereco,
             latitude,
             longitude,
-            mac_address
+            mac_address,
+            
         } = req.body as IAtualizarEstacao;
 
         if (id == undefined || id == 0) {
@@ -276,17 +302,19 @@ router.patch(
             bdConn = await StartConnection();
 
             let valoresQuery: Array<string> = [];
-            if (nome != undefined) valoresQuery.push(`nome = '${nome}'`);
-            if (endereco != undefined) valoresQuery.push(`endereco = '${endereco}'`);
-            if (latitude != undefined) valoresQuery.push(`latitude = '${latitude}'`);
-            if (longitude != undefined) valoresQuery.push(`longitude = '${longitude}'`);
-            if (mac_address != undefined) valoresQuery.push(`mac_address = '${mac_address}'`);
+            if (nome !== undefined) valoresQuery.push(`nome = '${nome}'`);
+            if (endereco !== undefined) valoresQuery.push(`endereco = '${endereco}'`);
+            if (latitude !== undefined) valoresQuery.push(`latitude = '${latitude}'`);
+            if (longitude !== undefined) valoresQuery.push(`longitude = '${longitude}'`);
+            if (mac_address !== undefined) valoresQuery.push(`mac_address = '${mac_address}'`);
 
-            const resultQuery = await Query<IAtualizarEstacao>(
+            await Query<IAtualizarEstacao>(
                 bdConn,
-                `update estacao set ${valoresQuery.join(", ")} where id = ${id};`,
+                `UPDATE estacao SET ${valoresQuery.join(", ")} WHERE id = ${id};`,
                 []
             );
+
+            // Remova toda a lógica de gerenciamento de sensores daqui
 
             const retorno = {
                 errors: [],
