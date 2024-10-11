@@ -2,7 +2,7 @@ import express, { Request, Response } from "express";
 import { IResponsePadrao } from "../types/Response";
 import { Pool } from "pg";
 import { StartConnection, EndConnection, Query } from "../services/postgres";
-import { IAtualizarAlerta, ICadastrarAlerta, IListarAlerta } from "../types/Alerta";
+import { IAtualizarAlerta, ICadastrarAlerta, IDeletarAlerta, IListarAlerta } from "../types/Alerta";
 
 const router = express.Router();
 
@@ -306,7 +306,61 @@ router.patch(
         if (bdConn) EndConnection(bdConn);
     }
 );
+/**
+ * @swagger
+ * /alerta/deletar:
+ *   delete:
+ *     tags: [Alerta]
+ *     summary: Deleta um alerta
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: integer
+ *     responses:
+ *       200:
+ *         description: Alerta deletado com sucesso
+ *       500:
+ *         description: Falha ao deletar alerta
+ */
+router.delete(
+    "/deletar",
+    async function (req: Request, res: Response) {
+        const {
+            id
+        } = req.body as IDeletarAlerta;
 
+        let bdConn: Pool | null = null;
+        try {
+            bdConn = await StartConnection();
+
+            const resultQuery = await Query<IDeletarAlerta>(
+                bdConn,
+                `delete from alerta where id = ${id};`,
+                []
+            );
+
+            const retorno = {
+                errors: [],
+                msg: ["Alerta deletada com sucesso"],
+                data: null
+            } as IResponsePadrao;
+            res.status(200).send(retorno);
+        } catch (err) {
+            const retorno = {
+                errors: [(err as Error).message],
+                msg: ["Falha ao deletar alerta"],
+                data: null
+            } as IResponsePadrao;
+            res.status(500).send(retorno);
+        };
+        if (bdConn) EndConnection(bdConn);
+    }
+);
 export {
     router as AlertaRouter
 };
