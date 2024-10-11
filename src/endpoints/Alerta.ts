@@ -2,7 +2,7 @@ import express, { Request, Response } from "express";
 import { IResponsePadrao } from "../types/Response";
 import { Pool } from "pg";
 import { StartConnection, EndConnection, Query } from "../services/postgres";
-import { ICadastrarAlerta } from "../types/Alerta";
+import { ICadastrarAlerta, IListarAlerta } from "../types/Alerta";
 
 const router = express.Router();
 
@@ -70,6 +70,87 @@ router.post(
             } as IResponsePadrao;
             res.status(500).send(retorno);
         };
+        if (bdConn) EndConnection(bdConn);
+    }
+);
+/**
+ * @swagger
+ * /alerta/{alertaId}:
+ *   get:
+ *     tags: [Alerta]
+ *     summary: Obtém um alerta pelo ID
+ *     parameters:
+ *       - name: alertaId
+ *         in: path
+ *         required: true
+ *         description: ID do alerta a ser obtido
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Alerta listado com sucesso
+ *       400:
+ *         description: ID inválido
+ *       404:
+ *         description: Alerta não encontrado
+ *       500:
+ *         description: Falha ao listar alerta
+ */
+router.get(
+    "/:alertaId",
+    async function (req: Request, res: Response) {
+        const id: number = parseInt(req.params.alertaId);
+
+        if (id == undefined || id == 0) {
+            const retorno = {
+                errors: [],
+                msg: [`o id (${id}) é inválido`],
+                data: null
+            } as IResponsePadrao;
+            res.status(400).send(retorno);
+            return;
+        };
+
+        let bdConn: Pool | null = null;
+        try {
+            bdConn = await StartConnection();
+
+            const resultQuery = await Query<IListarAlerta>(
+                bdConn,
+                `select * from alerta where id = ${id};`,
+                []
+            );
+
+            if (!resultQuery.rows.length) {
+                const retorno = {
+                    errors: [`Alerta com o id (${id}) não existe`],
+                    msg: [],
+                    data: null
+                } as IResponsePadrao;
+                res.status(404).send(retorno);
+                if (bdConn) EndConnection(bdConn);
+                return;
+            };
+
+            const alerta = resultQuery.rows[0];
+
+            const retorno = {
+                errors: [],
+                msg: ["Alerta listado com sucesso"],
+                data: {
+                    rows: [alerta],
+                    fields: resultQuery.fields
+                }
+            } as IResponsePadrao;
+            res.status(200).send(retorno);
+        } catch (err) {
+            const retorno = {
+                errors: [(err as Error).message],
+                msg: ["Falha ao listar alerta"],
+                data: null
+            } as IResponsePadrao;
+            res.status(500).send(retorno);
+        }
         if (bdConn) EndConnection(bdConn);
     }
 );
