@@ -2,7 +2,7 @@ import express, { Request, Response } from "express";
 import { IResponsePadrao } from "../types/Response";
 import { Pool } from "pg";
 import { StartConnection, EndConnection, Query } from "../services/postgres";
-import { ICadastrarAlerta, IListarAlerta } from "../types/Alerta";
+import { IAtualizarAlerta, ICadastrarAlerta, IListarAlerta } from "../types/Alerta";
 
 const router = express.Router();
 
@@ -210,6 +210,95 @@ router.get(
             const retorno = {
                 errors: [(err as Error).message],
                 msg: ["Falha ao listar estações"],
+                data: null
+            } as IResponsePadrao;
+            res.status(500).send(retorno);
+        }
+        if (bdConn) EndConnection(bdConn);
+    }
+);
+/**
+ * @swagger
+ * /alerta/atualizar:
+ *   patch:
+ *     tags: [Alerta]
+ *     summary: Atualiza um alerta
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: intege
+ *               id_estacao:
+ *                 type: number
+ *               id_parametro:
+ *                 type: number
+ *               condicao:
+ *                 type: string
+ *               nome:
+ *                 type: string
+ *               valor:
+ *                 type: number
+ *     responses:
+ *       200:
+ *         description: Alerta atualizado com sucesso
+ *       400:
+ *         description: ID inválido
+ *       500:
+ *         description: Falha ao atualizar alerta
+ */
+router.patch(
+    "/atualizar",
+    async function (req: Request, res: Response) {
+        const {
+            id,
+            id_estacao,
+            id_parametro,
+            condicao,
+            nome,
+            valor
+        } = req.body as IAtualizarAlerta;
+
+        if (id == undefined || id == 0) {
+            const retorno = {
+                errors: [],
+                msg: [`O id (${id}) é inválido`],
+                data: null
+            } as IResponsePadrao;
+            res.status(400).send(retorno);
+            return;
+        }
+
+        let bdConn: Pool | null = null;
+        try {
+            bdConn = await StartConnection();
+
+            let valoresQuery: Array<string> = [];
+            if (id_estacao !== undefined) valoresQuery.push(`id_estacao = '${id_estacao}'`);
+            if (id_parametro !== undefined) valoresQuery.push(`id_parametro = '${id_parametro}'`);
+            if (condicao !== undefined) valoresQuery.push(`condicao = '${condicao}'`);
+            if (nome !== undefined) valoresQuery.push(`nome = '${nome}'`);
+            if (valor !== undefined) valoresQuery.push(`valor = '${valor}'`);
+
+            await Query<IAtualizarAlerta>(
+                bdConn,
+                `UPDATE alerta SET ${valoresQuery.join(", ")} WHERE id = ${id};`,
+                []
+            );
+
+            const retorno = {
+                errors: [],
+                msg: ["Alerta atualizado com sucesso"],
+                data: null
+            } as IResponsePadrao;
+            res.status(200).send(retorno);
+        } catch (err) {
+            const retorno = {
+                errors: [(err as Error).message],
+                msg: ["Falha ao atualizar alerta"],
                 data: null
             } as IResponsePadrao;
             res.status(500).send(retorno);
