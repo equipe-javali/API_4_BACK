@@ -23,3 +23,7 @@ export interface IAtualizarAlerta {
     nome: string,
     valor: number
 };
+
+export interface IDeletarAlerta {
+    id: number
+};
