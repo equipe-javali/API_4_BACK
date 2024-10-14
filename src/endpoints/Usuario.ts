@@ -6,7 +6,7 @@ import { Pool } from "pg";
 import { ICadastrarUsuario, IDeletarUsuario, IAtualizarUsuario, IListarUsuario } from "../types/Usuario";
 import { IResponsePadrao } from "../types/Response";
 const { HashPassword } = require("../services/bcrypt");
-import { authenticateUser, updateUser } from "../services/auth";
+import { authenticateUser, updateUser, authenticateJWT } from "../services/auth";
 
 
 const router = express.Router();
@@ -181,7 +181,12 @@ router.post(
             const retorno: IResponsePadrao = {
                 errors: [],
                 msg: ["Login bem-sucedido"],
-                data: user
+                data: {
+                    id: user.id,
+                    nome: user.nome,
+                    email: user.email,
+                    token: user.token // Include the token in the response
+                }
             };
             res.status(200).send(retorno);
         } catch (err) {
@@ -368,6 +373,10 @@ router.get(
         if (bdConn) EndConnection(bdConn);
     }
 );
+
+// Aplicar o middleware de autenticação JWT para TODAS as rotas abaixo:
+router.use(authenticateJWT);
+
 /**
  * @swagger
  * /usuario/atualizar:
@@ -439,6 +448,7 @@ router.get(
  */
 router.patch(
     "/atualizar",
+    authenticateJWT,
     async (req: Request, res: Response) => {
         const { id, nome, email, senha } = req.body as IAtualizarUsuario;
 

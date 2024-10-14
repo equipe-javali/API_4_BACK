@@ -1,3 +1,5 @@
+require("dotenv-ts").config();
+
 import cors from "cors";
 import express from "express";
 import swaggerUi from "swagger-ui-express";
@@ -9,7 +11,6 @@ import { UnidadeMedidaRouter } from "./endpoints/UnidadeMedida";
 import { SensorRouter } from "./endpoints/Sensor";
 import { AlertaRouter } from "./endpoints/Alerta";
 
-require("dotenv-ts").config();
 
 const PORT = process.env.PORT || 3001;
 const app = express();
