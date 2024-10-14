@@ -2,6 +2,21 @@ import { Query } from "./postgres";
 import { Pool } from "pg";
 const { HashPasswordCompare, HashPassword } = require("./bcrypt");
 
+import { Request, Response, NextFunction } from "express";
+import jwt from "jsonwebtoken";
+
+// const JWT_SECRET = process.env.JWT_SECRET || "your_secret_key"; 
+const JWT_SECRET = process.env.JWT_SECRET as string;
+if (!JWT_SECRET) {
+    throw new Error("Erro ao carregar variável de ambiente: JWT_SECRET não está definido.");
+}
+
+
+interface UserPayload {
+    id: string;
+    email: string;
+}
+
 export async function authenticateUser(email: string, senha: string, bdConn: Pool) {
     const resultQuery = await Query(
         bdConn,
@@ -20,11 +35,31 @@ export async function authenticateUser(email: string, senha: string, bdConn: Poo
         throw new Error("Senha inválida");
     }
 
+    const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '1h' });
+
     return {
         id: user.id,
         nome: user.nome,
-        email: user.email
+        email: user.email,
+        token
     };
+}
+
+export function authenticateJWT(req: Request, res: Response, next: NextFunction) {
+    const token = req.headers.authorization?.split(" ")[1]; // The token should be passed in the Authorization header
+
+    if (!token) {
+        return res.sendStatus(401); // Unauthorized
+    }
+
+    jwt.verify(token, JWT_SECRET, (err, user) => {
+        if (err) {
+            return res.sendStatus(403); // Forbidden
+        }
+
+        req.user = user as UserPayload; // Save user data in the request
+        next();
+    });
 }
 
 
