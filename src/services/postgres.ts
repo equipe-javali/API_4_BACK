@@ -4,7 +4,7 @@ function StartConnection(): Pool {
     const { PGHOST, PGDATABASE, PGUSER, PGPASSWORD, ENDPOINT_ID, PGPORT } = process.env;
 
     if (!PGHOST || !PGDATABASE || !PGUSER || !PGPASSWORD || !ENDPOINT_ID || !PGPORT) {
-        throw "Erro ao carregar variáveis de ambiente";
+        throw "Erro ao carregar variáveis de ambiente postgres";
     }
 
     return new Pool({

@@ -1,14 +1,13 @@
 import express, { Request, Response } from "express";
 import { IDadosEstacao } from "../types/RecepcaoDados";
 import { IResponsePadrao } from "../types/Response";
-import { Pool } from "pg";
-import { StartConnection, EndConnection, Query } from "../services/postgres";
+import { StartConnection } from "../services/redis";
 
 const router = express.Router();
 
 /**
  * @swagger
- * /recepcaoDados/registrar:
+ * recepcaoDados/registrar:
  *   post:
  *     tags: [RecepcaoDados]
  *     summary: Guarda os dados recebidos da estação sem tratamento
@@ -19,6 +18,18 @@ const router = express.Router();
  *           schema:
  *             type: object
  *             properties:
+ *               uid:
+ *                 type: string
+ *                 description: "ID único da estação"
+ *               uxt:
+ *                 type: string
+ *                 description: "Identificador do tipo de dado (uxt)"
+ *               ...:
+ *                 type: any
+ *                 description: "valor"
+ *             required:
+ *               - uid
+ *               - uxt
  *     responses:
  *       200:
  *         description: Dados registrados com sucesso
@@ -30,34 +41,27 @@ router.post(
     async function (req: Request, res: Response) {
         const dadosEstacao = req.body as IDadosEstacao;
 
-        // armazenar os dados no redis
+        console.log(dadosEstacao);
 
-        // let bdConn: Pool | null = null;
-        // try {
-        //     bdConn = await StartConnection();
+        let redisClient = null;
+        try {
+            redisClient = await StartConnection();
+            redisClient.set(`${dadosEstacao.uid}:${dadosEstacao.uxt}`, JSON.stringify(dadosEstacao));
 
-        //     const resultQuery = await Query<IDadosEstacao>(
-        //         bdConn,
-        //         "insert into parametro (id_unidade, nome, fator, valor_offset, nome_json) values ($1, $2, $3, $4, $5);",
-        //         [unidade_medida.id, nome, fator, offset, ""]
-        //     );
-
-        //     const retorno = {
-        //         errors: [],
-        //         msg: ["parâmetro cadastrado com sucesso"],
-        //         data: null
-        //     } as IResponsePadrao;
-        //     res.status(200).send(retorno);
-        // } catch (err) {
-        //     console.log(err);
-        //     const retorno = {
-        //         errors: [(err as Error).message],
-        //         msg: ["falha ao cadastrar parâmetro"],
-        //         data: null
-        //     } as IResponsePadrao;
-        //     res.status(500).send(retorno);
-        // }
-        // if (bdConn) EndConnection(bdConn);
+            const retorno = {
+                errors: [],
+                msg: ["Dados registrados com sucesso"],
+                data: null
+            } as IResponsePadrao;
+            res.status(200).send(retorno);
+        } catch (err) {
+            const retorno = {
+                errors: [(err as Error).message],
+                msg: ["Falha ao registrar dados da estação"],
+                data: null
+            } as IResponsePadrao;
+            res.status(500).send(retorno);
+        }
     }
 );
 

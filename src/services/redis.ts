@@ -13,16 +13,10 @@ async function StartConnection() {
             host: RDHOST,
             port: parseInt(RDPORT)
         }
-    });
+    }).connect();
     return client;
 }
 
-async function EndConnection(client: any) {
-    await client.disconnect();
-    client.end();
-}
-
 export {
-    StartConnection,
-    EndConnection
+    StartConnection
 }
