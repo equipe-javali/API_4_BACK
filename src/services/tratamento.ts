@@ -1,7 +1,7 @@
 import { Pool } from "pg";
 import { StartConnection, EndConnection, Query } from "./postgres";
 import { StartConnection as redisStartConnection } from "./redis";
-import { ICadastrarMedicao, IDadosEstacao } from "../types/RecepcaoDados";
+import { IAlertaParametro, ICadastrarMedicao, IDadosEstacao } from "../types/RecepcaoDados";
 
 // checa se a estação possui um sensor com o parametro
 async function EstacaoPossuiSensorParametro(macEscacao: string, nomeParametro: string) {
@@ -110,11 +110,79 @@ async function GetSensorID(macEscacao: string, nomeParametro: string) {
     return id;
 }
 
+async function RegistrarOcorrenciaAlerta(macEstacao: string, alerta: IAlertaParametro, medicao: ICadastrarMedicao) {
+    let postgres: Pool | null = null;
+    try {
+        postgres = StartConnection();
+
+        const resultQuery = await Query(
+            postgres,
+            `insert into ocorrencia (id_alerta, data_hora, valor)
+                values ($1, $2, $3);`,
+            [alerta.id, medicao.data_hora, medicao.valor_calculado]
+        );
+    } catch (err) {
+        console.log(`falha ao registrar ocorrência: ${(err as Error).message}`);
+    }
+    if (postgres) EndConnection(postgres);
+}
+
+async function ListagemAlertas(macEstacao: string) {
+    let alertas: Array<IAlertaParametro> = [];
+
+    let postgres: Pool | null = null;
+    try {
+        postgres = StartConnection();
+
+        const resultQuery = await Query<IAlertaParametro>(
+            postgres,
+            `select alerta.id, parametro.nome_json, alerta.condicao, alerta.nome, alerta.valor from alerta
+                join estacao on alerta.id_estacao = estacao.id
+                join parametro on alerta.id_parametro = parametro.id
+                where estacao.mac_address = $1;`,
+            [macEstacao]
+        );
+
+        if (resultQuery.rows.length > 0) {
+            alertas = resultQuery.rows;
+        }
+    } catch (err) {
+        console.log(`falha ao registrar ocorrência: ${(err as Error).message}`);
+    }
+    if (postgres) EndConnection(postgres);
+
+    return alertas;
+}
+
+function ChecaAlerta(alerta: IAlertaParametro, valor: number) {
+    switch (alerta.condicao) {
+        case "<":
+            if (valor < alerta.valor)
+                return true;
+            break;
+        case ">":
+            if (valor > alerta.valor)
+                return true;
+            break;
+        case "<=":
+            if (valor <= alerta.valor)
+                return true;
+            break;
+        case ">=":
+            if (valor <= alerta.valor)
+                return true;
+            break;
+        case "=":
+            if (valor == alerta.valor)
+                return true;
+            break;
+    }
+    return false;
+}
+
 async function TratarDados() {
     const redis = await redisStartConnection();
     const chaves = await redis.keys("*");
-
-    console.log(chaves);
 
     for (let chaveIndex = 0; chaveIndex < chaves.length; chaveIndex++) {
         const conteudoChave = await redis.get(chaves[chaveIndex]);
@@ -122,25 +190,36 @@ async function TratarDados() {
             continue;
 
         const dadosMedicao: IDadosEstacao = JSON.parse(conteudoChave);
+        const alertas: Array<IAlertaParametro> = await ListagemAlertas(dadosMedicao.uid);
 
         const parametrosMedicao = Object.getOwnPropertyNames(dadosMedicao).filter((n) => n != "uid" && n != "uxt");
         for (let paramIndex = 0; paramIndex < parametrosMedicao.length; paramIndex++) {
-            if ((await EstacaoPossuiSensorParametro(dadosMedicao.uid, parametrosMedicao[paramIndex])) == false)
+            const nomeParametro = parametrosMedicao[paramIndex];
+            if ((await EstacaoPossuiSensorParametro(dadosMedicao.uid, nomeParametro)) == false)
                 continue;
 
-            const valorMedicao = parseFloat(dadosMedicao[parametrosMedicao[paramIndex]]);
-            const valorTratado = await TratarParametro(dadosMedicao.uid, parametrosMedicao[paramIndex], valorMedicao);
+            const valorMedicao = parseFloat(dadosMedicao[nomeParametro]);
+            const valorTratado = await TratarParametro(dadosMedicao.uid, nomeParametro, valorMedicao);
 
             const timezoneOffset = -3 * 60 * 60 * 1000;
             const dataCorrigida = new Date(Math.floor(parseFloat(dadosMedicao.uxt)) * 1000 + timezoneOffset).toISOString()
             const medicao: ICadastrarMedicao = {
                 sensor: {
-                    id: await GetSensorID(dadosMedicao.uid, parametrosMedicao[paramIndex])
+                    id: await GetSensorID(dadosMedicao.uid, nomeParametro)
                 },
                 data_hora: dataCorrigida,
                 valor_calculado: valorTratado
             } as ICadastrarMedicao;
             await RegistrarMedicao(medicao);
+
+            for (let alertaIndex = 0; alertaIndex < alertas.length; alertaIndex++) {
+                if (alertas[alertaIndex].nome_json != nomeParametro)
+                    continue;
+
+                if (ChecaAlerta(alertas[alertaIndex], valorTratado)) {
+                    await RegistrarOcorrenciaAlerta(dadosMedicao.uid, alertas[alertaIndex], medicao);
+                }
+            }
         }
 
         redis.del(chaves[chaveIndex]);

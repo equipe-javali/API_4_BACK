@@ -10,4 +10,12 @@ export interface ICadastrarMedicao {
     },
     data_hora: string,
     valor_calculado: number
-}
+};
+
+export interface IAlertaParametro {
+    id: number,
+    nome_json: string,
+    condicao: string,
+    nome: string,
+    valor: number
+};
