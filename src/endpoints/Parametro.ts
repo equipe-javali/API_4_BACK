@@ -43,7 +43,8 @@ router.post(
             unidade_medida,
             nome,
             fator,
-            offset
+            offset,
+            nome_json
         } = req.body as ICadastrarParametro;
 
         console.log(unidade_medida,
@@ -58,7 +59,7 @@ router.post(
             const resultQuery = await Query<ICadastrarParametro>(
                 bdConn,
                 "insert into parametro (id_unidade, nome, fator, valor_offset, nome_json) values ($1, $2, $3, $4, $5);",
-                [unidade_medida.id, nome, fator, offset, ""]
+                [unidade_medida.id, nome, fator, offset, nome_json]
             );
 
             const retorno = {
@@ -253,7 +254,8 @@ router.patch(
             id,
             nome,
             fator,
-            offset
+            offset,
+            nome_json
         } = req.body as IAtualizarParametro;
 
         if (id == undefined || id == 0) {
@@ -274,6 +276,7 @@ router.patch(
             if (nome != undefined) valoresQuery.push(`nome = '${nome}'`);
             if (fator != undefined) valoresQuery.push(`fator = '${fator}'`);
             if (offset != undefined) valoresQuery.push(`valor_offset = '${offset}'`);
+            if (nome_json != undefined) valoresQuery.push(`nome_json = '${nome_json}'`);
 
             const resultQuery = await Query<IAtualizarParametro>(
                 bdConn,

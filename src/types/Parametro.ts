@@ -4,7 +4,8 @@ export interface ICadastrarParametro {
     },
     nome: string,
     fator: number,
-    offset: number
+    offset: number,
+    nome_json: string
 };
 
 export interface IListarParametro {
@@ -12,7 +13,8 @@ export interface IListarParametro {
     unidade_medida: IUnidadeMedida,
     nome: string,
     fator: number,
-    offset: number
+    offset: number,
+    nome_json: string
 };
 
 export interface IAtualizarParametro {
@@ -22,7 +24,8 @@ export interface IAtualizarParametro {
     },
     nome: string,
     fator: number,
-    offset: number
+    offset: number,
+    nome_json: string
 };
 
 export interface IDeletarParametro {
