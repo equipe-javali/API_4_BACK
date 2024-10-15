@@ -11,6 +11,7 @@ import { UnidadeMedidaRouter } from "./endpoints/UnidadeMedida";
 import { SensorRouter } from "./endpoints/Sensor";
 import { AlertaRouter } from "./endpoints/Alerta";
 import { RecepcaoDadosRouter } from "./endpoints/RecepcaoDados";
+import { TratarDados } from "./services/tratamento";
 
 
 const PORT = process.env.PORT || 3001;
@@ -29,6 +30,12 @@ app.use("/usuario", UsuarioRouter);
 app.use("/sensor", SensorRouter);
 app.use("/alerta", AlertaRouter);
 app.use("/recepcaoDados", RecepcaoDadosRouter);
+
+// roda o serviço a cada X minutos para tratar os dados guardados no redis
+const { DELAY_TRATAMENTO } = process.env
+setTimeout(async () => {
+  await TratarDados();
+}, 1000 * 60 * (DELAY_TRATAMENTO ? parseInt(DELAY_TRATAMENTO) : 5));
 
 app.listen(
   PORT,
