@@ -41,11 +41,8 @@ router.post(
     async function (req: Request, res: Response) {
         const dadosEstacao = req.body as IDadosEstacao;
 
-        console.log(dadosEstacao);
-
-        let redisClient = null;
         try {
-            redisClient = await StartConnection();
+            const redisClient = await StartConnection();
             redisClient.set(`${dadosEstacao.uid}:${dadosEstacao.uxt}`, JSON.stringify(dadosEstacao));
 
             const retorno = {
