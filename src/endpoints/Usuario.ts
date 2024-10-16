@@ -214,6 +214,9 @@ router.post(
     }
 );
 
+// Aplicar o middleware de autenticação JWT para TODAS as rotas abaixo:
+router.use(authenticateJWT);
+
 
 /**
  * @swagger
@@ -374,8 +377,20 @@ router.get(
     }
 );
 
-// Aplicar o middleware de autenticação JWT para TODAS as rotas abaixo:
-router.use(authenticateJWT);
+router.post(
+    "/logout",
+    async (req: Request, res: Response) => {
+        // adicionar lógica para invalidar o token, se necessário
+        // Por exemplo, adicionar o token a uma blacklist
+
+        const retorno: IResponsePadrao = {
+            errors: [],
+            msg: ["Logout realizado com sucesso"],
+            data: null
+        };
+        res.status(200).send(retorno);
+    }
+);
 
 /**
  * @swagger
@@ -448,7 +463,6 @@ router.use(authenticateJWT);
  */
 router.patch(
     "/atualizar",
-    authenticateJWT,
     async (req: Request, res: Response) => {
         const { id, nome, email, senha } = req.body as IAtualizarUsuario;
 
