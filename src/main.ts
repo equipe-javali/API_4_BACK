@@ -13,7 +13,6 @@ import { AlertaRouter } from "./endpoints/Alerta";
 import { RecepcaoDadosRouter } from "./endpoints/RecepcaoDados";
 import { TratarDados } from "./services/tratamento";
 
-
 const PORT = process.env.PORT || 3001;
 const app = express();
 
