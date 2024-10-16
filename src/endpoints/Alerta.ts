@@ -209,7 +209,7 @@ router.get(
         } catch (err) {
             const retorno = {
                 errors: [(err as Error).message],
-                msg: ["Falha ao listar estações"],
+                msg: ["Falha ao listar alertas"],
                 data: null
             } as IResponsePadrao;
             res.status(500).send(retorno);
