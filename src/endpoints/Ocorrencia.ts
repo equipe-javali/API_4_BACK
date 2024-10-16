@@ -33,7 +33,6 @@ router.get(
     "/:ocorrenciaId",
     async function (req: Request, res: Response) {
         const id: number = parseInt(req.params.ocorrenciaId);
-        console.log(id);
 
         if (id == undefined || id == 0) {
             const retorno = {
@@ -88,7 +87,76 @@ router.get(
         if (bdConn) EndConnection(bdConn);
     }
 );
+/**
+ * @swagger
+ * /ocorrencia/{idAlerta}/{quantidade}/{pagina}:
+ *   get:
+ *     tags: [Ocorrencia]
+ *     summary: Lista ocorrências de um alerta com paginação
+ *     parameters:
+ *       - name: idAlerta
+ *         in: path
+ *         required: true
+ *         description: ID do alerta a ser obtido
+ *         schema:
+ *           type: integer
+ *       - name: quantidade
+ *         in: path
+ *         required: true
+ *         description: Número de ocorrência a serem retornados
+ *         schema:
+ *           type: integer
+ *       - name: pagina
+ *         in: path
+ *         required: true
+ *         description: Número da página
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Ocorrência listadas com sucesso
+ *       500:
+ *         description: Falha ao listar ocorrência
+ */
+router.get(
+    "/:idAlerta/:quantidade/:pagina",
+    async function (req: Request, res: Response) {
+        const idAlerta: number = parseInt(req.params.idAlerta);
+        const quantidade: number = parseInt(req.params.quantidade);
+        const pagina: number = parseInt(req.params.pagina);
 
+        let bdConn: Pool | null = null;
+        try {
+            bdConn = await StartConnection();
+
+            const resultQuery = await Query<IListarOcorrencia>(
+                bdConn,
+                "select * from ocorrencia where id_alerta = $1 limit $2 offset $3;",
+                [idAlerta, quantidade, pagina]
+            );
+
+            const ocorrência = resultQuery.rows;
+
+            const retorno = {
+                errors: [],
+                msg: ["Ocorrência listadas com sucesso"],
+                data: {
+                    rows: ocorrência,
+                    fields: resultQuery.fields
+                }
+            } as IResponsePadrao;
+            res.status(200).send(retorno);
+        } catch (err) {
+            const retorno = {
+                errors: [(err as Error).message],
+                msg: ["Falha ao listar ocorrência"],
+                data: null
+            } as IResponsePadrao;
+            res.status(500).send(retorno);
+        }
+        if (bdConn) EndConnection(bdConn);
+    }
+);
 export {
     router as OcorrenciaRouter
 };
