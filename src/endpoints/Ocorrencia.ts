@@ -157,6 +157,69 @@ router.get(
         if (bdConn) EndConnection(bdConn);
     }
 );
+/**
+ * @swagger
+ * /ocorrencia/{quantidade}/{pagina}:
+ *   get:
+ *     tags: [Ocorrencia]
+ *     summary: Lista ocorrências com paginação
+ *     parameters:
+ *       - name: quantidade
+ *         in: path
+ *         required: true
+ *         description: Número de ocorrência a serem retornados
+ *         schema:
+ *           type: integer
+ *       - name: pagina
+ *         in: path
+ *         required: true
+ *         description: Número da página
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Ocorrência listadas com sucesso
+ *       500:
+ *         description: Falha ao listar ocorrência
+ */
+router.get(
+    "/:quantidade/:pagina",
+    async function (req: Request, res: Response) {
+        const quantidade: number = parseInt(req.params.quantidade);
+        const pagina: number = parseInt(req.params.pagina);
+
+        let bdConn: Pool | null = null;
+        try {
+            bdConn = await StartConnection();
+
+            const resultQuery = await Query<IListarOcorrencia>(
+                bdConn,
+                "select * from ocorrencia limit $1 offset $2;",
+                [quantidade, pagina]
+            );
+
+            const ocorrência = resultQuery.rows;
+
+            const retorno = {
+                errors: [],
+                msg: ["Ocorrência listadas com sucesso"],
+                data: {
+                    rows: ocorrência,
+                    fields: resultQuery.fields
+                }
+            } as IResponsePadrao;
+            res.status(200).send(retorno);
+        } catch (err) {
+            const retorno = {
+                errors: [(err as Error).message],
+                msg: ["Falha ao listar ocorrência"],
+                data: null
+            } as IResponsePadrao;
+            res.status(500).send(retorno);
+        }
+        if (bdConn) EndConnection(bdConn);
+    }
+);
 export {
     router as OcorrenciaRouter
 };
