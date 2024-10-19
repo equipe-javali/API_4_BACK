@@ -3,76 +3,9 @@ import { IAtualizarEstacao, ICadastrarEstacao, IDeletarEstacao, IListarEstacao }
 import { IResponsePadrao } from "../types/Response";
 import { Pool } from "pg";
 import { StartConnection, EndConnection, Query } from "../services/postgres";
+import { authenticateJWT } from "../services/auth";
 
 const router = express.Router();
-
-/**
- * @swagger
- * /estacao/cadastrar:
- *   post:
- *     tags: [Estacao]
- *     summary: Cadastra uma nova estação
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               nome:
- *                 type: string
- *               endereco:
- *                 type: string
- *               latitude:
- *                 type: number
- *               longitude:
- *                 type: number
- *               mac_address:
- *                 type: string
- *     responses:
- *       200:
- *         description: Estação cadastrada com sucesso
- *       500:
- *         description: Falha ao cadastrar estação
- */
-router.post(
-    "/cadastrar",
-    async function (req: Request, res: Response) {
-        const {
-            nome,
-            endereco,
-            latitude,
-            longitude,
-            mac_address
-        } = req.body as ICadastrarEstacao;
-
-        let bdConn: Pool | null = null;
-        try {
-            bdConn = await StartConnection();
-
-            const resultQuery = await Query<ICadastrarEstacao>(
-                bdConn,
-                "insert into estacao (nome, endereco, latitude, longitude, mac_address) values ($1, $2, $3, $4, $5) returning id;",
-                [nome, endereco, latitude, longitude, mac_address]
-            );
-
-            const retorno = {
-                errors: [],
-                msg: ["estação cadastrada com sucesso"],
-                data: resultQuery.rows[0]
-            } as IResponsePadrao;
-            res.status(200).send(retorno);
-        } catch (err) {
-            const retorno = {
-                errors: [(err as Error).message],
-                msg: ["falha ao cadastrar estação"],
-                data: null
-            } as IResponsePadrao;
-            res.status(500).send(retorno);
-        }
-        if (bdConn) EndConnection(bdConn);
-    }
-);
 
 /**
  * @swagger
@@ -241,6 +174,79 @@ router.get(
         if (bdConn) EndConnection(bdConn);
     }
 );
+
+// Aplicar o middleware de autenticação JWT para TODAS as rotas abaixo:
+router.use(authenticateJWT);
+
+/**
+ * @swagger
+ * /estacao/cadastrar:
+ *   post:
+ *     tags: [Estacao]
+ *     summary: Cadastra uma nova estação
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               nome:
+ *                 type: string
+ *               endereco:
+ *                 type: string
+ *               latitude:
+ *                 type: number
+ *               longitude:
+ *                 type: number
+ *               mac_address:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Estação cadastrada com sucesso
+ *       500:
+ *         description: Falha ao cadastrar estação
+ */
+router.post(
+    "/cadastrar",
+    async function (req: Request, res: Response) {
+        const {
+            nome,
+            endereco,
+            latitude,
+            longitude,
+            mac_address
+        } = req.body as ICadastrarEstacao;
+
+        let bdConn: Pool | null = null;
+        try {
+            bdConn = await StartConnection();
+
+            const resultQuery = await Query<ICadastrarEstacao>(
+                bdConn,
+                "insert into estacao (nome, endereco, latitude, longitude, mac_address) values ($1, $2, $3, $4, $5) returning id;",
+                [nome, endereco, latitude, longitude, mac_address]
+            );
+
+            const retorno = {
+                errors: [],
+                msg: ["estação cadastrada com sucesso"],
+                data: resultQuery.rows[0]
+            } as IResponsePadrao;
+            res.status(200).send(retorno);
+        } catch (err) {
+            const retorno = {
+                errors: [(err as Error).message],
+                msg: ["falha ao cadastrar estação"],
+                data: null
+            } as IResponsePadrao;
+            res.status(500).send(retorno);
+        }
+        if (bdConn) EndConnection(bdConn);
+    }
+);
+
+
 /**
  * @swagger
  * /estacao/atualizar:

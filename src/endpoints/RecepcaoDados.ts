@@ -2,8 +2,12 @@ import express, { Request, Response } from "express";
 import { IDadosEstacao } from "../types/RecepcaoDados";
 import { IResponsePadrao } from "../types/Response";
 import { StartConnection } from "../services/redis";
+import { authenticateJWT } from "../services/auth";
 
 const router = express.Router();
+
+// Aplicar o middleware de autenticação JWT para TODAS as rotas abaixo:
+router.use(authenticateJWT);
 
 /**
  * @swagger
