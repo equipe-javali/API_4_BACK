@@ -12,6 +12,9 @@ const swaggerOptions = {
             {
                 url: "http://localhost:3001",
             },
+            {
+                url: "http://34.204.31.143:3001"
+            }
         ],
     },
     apis: ["./src/endpoints/*.ts"]
