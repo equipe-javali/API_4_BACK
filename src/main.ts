@@ -14,7 +14,7 @@ import { RecepcaoDadosRouter } from "./endpoints/RecepcaoDados";
 import { TratarDados } from "./services/tratamento";
 import { OcorrenciaRouter } from "./endpoints/Ocorrencia";
 
-const PORT = process.env.PORT || 3001;
+const PORT = (process.env.PORT ? parseInt(process.env.PORT) : 3001);
 const app = express();
 
 app.use(require("body-parser").urlencoded({ extended: false }));
@@ -40,6 +40,7 @@ setTimeout(async () => {
 
 app.listen(
   PORT,
+  "0.0.0.0",
   function () {
     console.log(`API aberta na porta ${PORT}`);
   }
