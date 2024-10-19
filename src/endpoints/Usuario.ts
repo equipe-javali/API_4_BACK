@@ -214,10 +214,6 @@ router.post(
     }
 );
 
-// Aplicar o middleware de autenticação JWT para TODAS as rotas abaixo:
-router.use(authenticateJWT);
-
-
 /**
  * @swagger
  * /usuario/usuarios:
@@ -376,6 +372,9 @@ router.get(
         if (bdConn) EndConnection(bdConn);
     }
 );
+
+// Aplicar o middleware de autenticação JWT para TODAS as rotas abaixo:
+router.use(authenticateJWT);
 
 router.post(
     "/logout",
