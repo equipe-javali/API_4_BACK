@@ -24,7 +24,7 @@ jobs:
       
       - name: Deploy
         run: |
-          ssh -i ~/.ssh/id_rsa -o "StrictHostKeyChecking=no" ubuntu@${{ secrets.AWS_HOST }}" << 'EOF'
+          ssh -i ~/.ssh/id_rsa -o "StrictHostKeyChecking=no" ubuntu@"${{ secrets.AWS_HOST }}" << 'EOF'
             pkill -f "node build/main.js" || echo "Processo Node.js nao esta rodando."
             cd API_4_BACK
             git pull origin main
