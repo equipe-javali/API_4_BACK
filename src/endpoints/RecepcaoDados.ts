@@ -6,9 +6,6 @@ import { authenticateJWT } from "../services/auth";
 
 const router = express.Router();
 
-// Aplicar o middleware de autenticação JWT para TODAS as rotas abaixo:
-router.use(authenticateJWT);
-
 /**
  * @swagger
  * recepcaoDados/registrar:
@@ -45,8 +42,9 @@ router.post(
     async function (req: Request, res: Response) {
         const dadosEstacao = req.body as IDadosEstacao;
 
+        let redisClient = null;
         try {
-            const redisClient = await StartConnection();
+            redisClient = await StartConnection();
             redisClient.set(`${dadosEstacao.uid}:${dadosEstacao.uxt}`, JSON.stringify(dadosEstacao));
 
             const retorno = {
@@ -63,6 +61,7 @@ router.post(
             } as IResponsePadrao;
             res.status(500).send(retorno);
         }
+        if (redisClient) await redisClient.quit();
     }
 );
 
