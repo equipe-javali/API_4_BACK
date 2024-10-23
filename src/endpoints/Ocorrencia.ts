@@ -8,6 +8,79 @@ const router = express.Router();
 
 /**
  * @swagger
+ * /ocorrencia/ultimasOcorrencias/{quantidade}/{pagina}:
+ *   get:
+ *     tags: [Ocorrencia]
+ *     summary: Obtém as últimas ocorrências paginadas
+ *     parameters:
+ *       - name: quantidade
+ *         in: path
+ *         required: true
+ *         description: Número de ocorrências a serem retornadas
+ *         schema:
+ *           type: integer
+ *       - name: pagina
+ *         in: path
+ *         required: true
+ *         description: Número da página a ser retornada (0 para a primeira página)
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Ocorrências listadas com sucesso
+ *       400:
+ *         description: Parâmetros inválidos
+ *       404:
+ *         description: Não foram encontradas ocorrências
+ *       500:
+ *         description: Falha ao listar as ocorrências
+ */
+router.get(
+    "/ultimasOcorrencias/:quantidade/:pagina",
+    async function (req: Request, res: Response) {
+        const quantidade: number = parseInt(req.params.quantidade);
+        const pagina: number = parseInt(req.params.pagina);
+
+        let bdConn: Pool | null = null;
+        try {
+            bdConn = await StartConnection();
+
+            const resultQuery = await Query<IListarOcorrencia>(
+                bdConn,
+                `select min(o.id) as id, o.id_alerta, max(o.data_hora) as data_hora, max(o.valor) as valor, um.nome as nome_unidade
+                    from ocorrencia o
+                        join alerta on o.id_alerta = alerta.id
+                        join parametro on parametro.id = alerta.id_parametro
+                        join unidade_medida um on um.id = parametro.id_unidade
+                    group by o.id_alerta, um.nome
+                    order by data_hora desc limit $1 offset $2;`,
+                [quantidade, pagina]
+            );
+
+            const ocorrencias = resultQuery.rows;
+
+            const retorno = {
+                errors: [],
+                msg: ["Ocorrências recentes listadas com sucesso"],
+                data: {
+                    rows: [ocorrencias],
+                    fields: resultQuery.fields
+                }
+            } as IResponsePadrao;
+            res.status(200).send(retorno);
+        } catch (err) {
+            const retorno = {
+                errors: [(err as Error).message],
+                msg: ["Falha ao listar as ocorrências recentes"],
+                data: null
+            } as IResponsePadrao;
+            res.status(500).send(retorno);
+        }
+        if (bdConn) EndConnection(bdConn);
+    }
+);
+/**
+ * @swagger
  * /ocorrencia/{ocorrenciaId}:
  *   get:
  *     tags: [Ocorrencia]
@@ -139,7 +212,7 @@ router.get(
 
             const retorno = {
                 errors: [],
-                msg: ["Ocorrência listadas com sucesso"],
+                msg: ["Ocorrências listadas com sucesso"],
                 data: {
                     rows: ocorrência,
                     fields: resultQuery.fields
@@ -149,7 +222,7 @@ router.get(
         } catch (err) {
             const retorno = {
                 errors: [(err as Error).message],
-                msg: ["Falha ao listar ocorrência"],
+                msg: ["Falha ao listar ocorrências"],
                 data: null
             } as IResponsePadrao;
             res.status(500).send(retorno);
