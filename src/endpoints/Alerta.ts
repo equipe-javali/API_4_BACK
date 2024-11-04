@@ -184,6 +184,10 @@ router.use(authenticateJWT);
  *     responses:
  *       200:
  *         description: Alerta cadastrado com sucesso
+ *       401:
+ *         description: Não autorizado - Token não fornecido ou inválido
+ *       403:
+ *         description: Proibido - Token inválido ou não autorizado
  *       500:
  *         description: Falha ao cadastrar alerta
  */
@@ -256,6 +260,10 @@ router.post(
  *         description: Alerta atualizado com sucesso
  *       400:
  *         description: ID inválido
+ *       401:
+ *         description: Não autorizado - Token não fornecido ou inválido
+ *       403:
+ *         description: Proibido - Token inválido ou não autorizado
  *       500:
  *         description: Falha ao atualizar alerta
  */
@@ -333,6 +341,10 @@ router.patch(
  *     responses:
  *       200:
  *         description: Alerta deletado com sucesso
+ *       401:
+ *         description: Não autorizado - Token não fornecido ou inválido
+ *       403:
+ *         description: Proibido - Token inválido ou não autorizado
  *       500:
  *         description: Falha ao deletar alerta
  */

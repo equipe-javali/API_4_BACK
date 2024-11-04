@@ -204,6 +204,10 @@ router.use(authenticateJWT);
  *     responses:
  *       200:
  *         description: Estação cadastrada com sucesso
+ *       401:
+ *         description: Não autorizado - Token não fornecido ou inválido
+ *       403:
+ *         description: Proibido - Token inválido ou não autorizado
  *       500:
  *         description: Falha ao cadastrar estação
  */
@@ -277,6 +281,10 @@ router.post(
  *         description: Estação atualizada com sucesso
  *       400:
  *         description: ID inválido
+ *       401:
+ *         description: Não autorizado - Token não fornecido ou inválido
+ *       403:
+ *         description: Proibido - Token inválido ou não autorizado
  *       500:
  *         description: Falha ao atualizar estação
  */
@@ -358,6 +366,10 @@ router.patch(
  *     responses:
  *       200:
  *         description: Estação deletada com sucesso
+ *       401:
+ *         description: Não autorizado - Token não fornecido ou inválido
+ *       403:
+ *         description: Proibido - Token inválido ou não autorizado
  *       500:
  *         description: Falha ao deletar estação
  */
@@ -416,6 +428,10 @@ router.delete(
  *     responses:
  *       200:
  *         description: Sensor adicionado à estação com sucesso
+ *       401:
+ *         description: Não autorizado - Token não fornecido ou inválido
+ *       403:
+ *         description: Proibido - Token inválido ou não autorizado
  *       500:
  *         description: Falha ao adicionar sensor à estação
  */
@@ -495,6 +511,10 @@ router.post(
  *     responses:
  *       200:
  *         description: Sensor removido da estação com sucesso
+ *       401:
+ *         description: Não autorizado - Token não fornecido ou inválido
+ *       403:
+ *         description: Proibido - Token inválido ou não autorizado
  *       500:
  *         description: Falha ao remover sensor da estação
  */

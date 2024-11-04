@@ -177,6 +177,10 @@ router.use(authenticateJWT);
  *     responses:
  *       200:
  *         description: Parâmetro cadastrado com sucesso
+ *       401:
+ *         description: Não autorizado - Token não fornecido ou inválido
+ *       403:
+ *         description: Proibido - Token inválido ou não autorizado
  *       500:
  *         description: Falha ao cadastrar parâmetro
  */
@@ -251,6 +255,10 @@ router.post(
  *         description: Parâmetro atualizado com sucesso
  *       400:
  *         description: ID inválido
+ *       401:
+ *         description: Não autorizado - Token não fornecido ou inválido
+ *       403:
+ *         description: Proibido - Token inválido ou não autorizado
  *       500:
  *         description: Falha ao atualizar parâmetro
  */
@@ -326,6 +334,10 @@ router.patch(
  *     responses:
  *       200:
  *         description: Parâmetro deletado com sucesso
+ *       401:
+ *         description: Não autorizado - Token não fornecido ou inválido
+ *       403:
+ *         description: Proibido - Token inválido ou não autorizado
  *       500:
  *         description: Falha ao deletar parâmetro
  */

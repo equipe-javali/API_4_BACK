@@ -455,6 +455,10 @@ router.post(
  *                       example: "$2b$10$niheCTutS6DzYR1yTC8Yq.N4G.XUj5nEGyC2F3v18r6b/uHWJTSw6"
  *       400:
  *         description: Nenhum dado para atualizar
+ *       401:
+ *         description: Não autorizado - Token não fornecido ou inválido
+ *       403:
+ *         description: Proibido - Token inválido ou não autorizado
  *       404:
  *         description: Usuário não encontrado
  *       500:
@@ -525,6 +529,10 @@ router.patch(
  *         description: Usuário deletado com sucesso
  *       400:
  *         description: ID inválido
+ *       401:
+ *         description: Não autorizado - Token não fornecido ou inválido
+ *       403:
+ *         description: Proibido - Token inválido ou não autorizado
  *       500:
  *         description: Falha ao excluir usuário
  *         

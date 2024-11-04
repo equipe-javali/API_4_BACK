@@ -172,6 +172,10 @@ router.use(authenticateJWT);
  *     responses:
  *       200:
  *         description: Sensor cadastrado com sucesso
+ *       401:
+ *         description: Não autorizado - Token não fornecido ou inválido
+ *       403:
+ *         description: Proibido - Token inválido ou não autorizado
  *       500:
  *         description: Falha ao cadastrar sensor
  */
@@ -234,6 +238,10 @@ router.post(
  *         description: Sensor atualizado com sucesso
  *       400:
  *         description: ID inválido
+ *       401:
+ *         description: Não autorizado - Token não fornecido ou inválido
+ *       403:
+ *         description: Proibido - Token inválido ou não autorizado
  *       500:
  *         description: Falha ao atualizar sensor
  */
@@ -306,6 +314,10 @@ router.patch(
  *     responses:
  *       200:
  *         description: Sensor deletado com sucesso
+ *       401:
+ *         description: Não autorizado - Token não fornecido ou inválido
+ *       403:
+ *         description: Proibido - Token inválido ou não autorizado
  *       500:
  *         description: Falha ao deletar sensor
  */
