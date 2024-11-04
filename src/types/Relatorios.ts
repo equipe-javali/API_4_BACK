@@ -1,3 +1,8 @@
+export interface IArquivo {
+    nomeArquivo: string,
+    tabelas: IGraficos[]
+}
+
 export interface IBarras {
     y: number,
     x: string
