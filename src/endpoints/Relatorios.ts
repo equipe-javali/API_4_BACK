@@ -1,8 +1,9 @@
+import Excel from 'exceljs';
 import express, { Request, Response } from "express";
 import { IResponsePadrao } from "../types/Response";
 import { Pool } from "pg";
 import { StartConnection, EndConnection, Query } from "../services/postgres";
-import { IBarras, iFiltroRelatorios, IPontoMapa, IRelatorios } from "../types/Relatorios";
+import { IBarras, IGraficos, iFiltroRelatorios, IPontoMapa, IRelatorios, IArquivo } from "../types/Relatorios";
 
 const router = express.Router();
 
@@ -147,6 +148,110 @@ router.post(
         if (bdConn) EndConnection(bdConn);
     }
 );
+
+/**
+ * @swagger
+ * /relatorio/download:
+ *  post:
+ *      tags: [Relatório]
+ *      summary: Gera e faz download de um arquivo Excel com gráficos.
+ *      requestBody:
+ *          required: true
+ *          content:
+ *              application/json:
+ *                  schema:
+ *                      type: object
+ *                      properties:
+ *                          nomeArquivo:
+ *                              type: string
+ *                              description: Nome do arquivo Excel a ser gerado.
+ *                          tabelas:
+ *                              type: array
+ *                              items:
+ *                                  type: object
+ *                                  properties:
+ *                                      dados:
+ *                                          type: array
+ *                                          description: Dados do gráfico em formato de matriz.
+ *                                          items:
+ *                                              type: array
+ *                                              items:
+ *                                                  type: string
+ *                                      titulo:
+ *                                          type: string
+ *                                          description: Título da planilha.
+ *                                      subtitulos:
+ *                                          type: array
+ *                                          description: Subtítulos das colunas da planilha.
+ *                                          items:
+ *                                              type: string
+ *      responses:
+ *          200:
+ *              description: Arquivo Excel gerado e enviado com sucesso.
+ *              content:
+ *                  application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+ *                      schema:
+ *                          type: string
+ *                          format: binary
+ *          500:
+ *              description: Falha ao gerar o arquivo Excel.
+ */
+
+router.post("/download", async function (req: Request, res: Response) {
+    const dados: IArquivo = req.body;
+
+    const workbook = new Excel.Workbook();
+    workbook.creator = dados.nomeArquivo;
+    workbook.created = new Date();
+
+    dados.tabelas.forEach((grafico: IGraficos) => {
+        const sheet = workbook.addWorksheet(grafico.titulo);
+
+        const titleRow = sheet.addRow(grafico.subtitulos);
+        titleRow.height = 30;
+        titleRow.eachCell((cell) => {
+            cell.font = { bold: true };
+            cell.alignment = { vertical: 'middle', horizontal: 'center' };
+            cell.border = {
+                top: { style: 'thin' },
+                left: { style: 'thin' },
+                bottom: { style: 'thin' },
+                right: { style: 'thin' }
+            };
+        });
+
+        grafico.dados.forEach((dado) => {
+            const row = sheet.addRow(dado);
+            row.eachCell({ includeEmpty: true }, (cell) => {
+                cell.alignment = { vertical: 'middle', horizontal: 'center' };
+                cell.border = {
+                    top: { style: 'thin' },
+                    left: { style: 'thin' },
+                    bottom: { style: 'thin' },
+                    right: { style: 'thin' }
+                };
+            });
+            row.height = 30;
+        });
+
+        titleRow.eachCell({ includeEmpty: true }, (cell) => {
+            cell.border = {
+                top: { style: 'thin' },
+                left: { style: 'thin' },
+                bottom: { style: 'thin' },
+                right: { style: 'thin' }
+            };
+        });
+
+        sheet.getColumn(1).width = 80;
+        sheet.getColumn(2).width = 80;
+    });
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    res.setHeader('Content-Disposition', `attachment; filename=${encodeURIComponent(dados.nomeArquivo)}.xlsx`);
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.send(buffer);
+});
 
 export {
     router as RelatorioRouter
