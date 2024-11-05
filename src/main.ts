@@ -13,6 +13,7 @@ import { AlertaRouter } from "./endpoints/Alerta";
 import { RecepcaoDadosRouter } from "./endpoints/RecepcaoDados";
 import { TratarDados } from "./services/tratamento";
 import { OcorrenciaRouter } from "./endpoints/Ocorrencia";
+import { RelatorioRouter } from "./endpoints/Relatorios";
 
 const PORT = (process.env.PORT ? parseInt(process.env.PORT) : 3001);
 const app = express();
@@ -31,6 +32,7 @@ app.use("/sensor", SensorRouter);
 app.use("/alerta", AlertaRouter);
 app.use("/ocorrencia", OcorrenciaRouter);
 app.use("/recepcaoDados", RecepcaoDadosRouter);
+app.use("/relatorio", RelatorioRouter);
 
 // roda o serviço a cada X minutos para tratar os dados guardados no redis
 const { DELAY_TRATAMENTO } = process.env
