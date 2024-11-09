@@ -112,7 +112,7 @@ router.post(
                     titulo: 'Coordenadas das estações'
                 },
                 alertaPorEstacoes: {
-                    dados: resultQueryOcorrenciaAlerta.rows.map((dado: IBarras) => [dado.x.toString(), dado.y.toString()]),
+                    dados: resultQueryAlertaEstacao.rows.map((dado: IBarras) => [dado.x.toString(), dado.y.toString()]),
                     subtitulos: ['Estação (nome)', 'Alertas (quantidade)'],
                     titulo: 'Quantidade de alertas por estação'
                 },
