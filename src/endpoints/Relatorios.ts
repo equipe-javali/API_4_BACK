@@ -52,18 +52,18 @@ router.post(
 
         if (estacoes) {
             const ids = estacoes.join(',')
-            filtroMapa = `where id_estacao in (${ids})`
+            filtroMapa = `where id in (${ids})`
             filtroEstacao += ` "a".id_estacao in (${ids})`
         }
         if (dataInicio) {
-            filtroSensor += ` "m".data_hora >= ${dataInicio}`
-            filtroEstacao += ` "o".data_hora >= ${dataInicio}`
-            filtroAlerta += ` "o".data_hora >= ${dataInicio}`
+            filtroSensor += ` "m".data_hora >= '${dataInicio}'`;
+            filtroEstacao += (filtroEstacao && " and") + ` "o".data_hora >= '${dataInicio}'`;
+            filtroAlerta += `"o".data_hora >= ' ${dataInicio}'`;
         }
         if (dataFim) {
-            filtroSensor += ` "m".data_hora <= ${dataFim}`
-            filtroEstacao += ` "o".data_hora <= ${dataFim}`
-            filtroAlerta += ` "o".data_hora <= ${dataFim}`
+            filtroSensor += (filtroSensor && " and") + ` "m".data_hora <= '${dataFim}'`;
+            filtroEstacao += (filtroEstacao && " and") + ` "o".data_hora <= '${dataFim}'`;
+            filtroAlerta += (filtroAlerta && " and") + ` "o".data_hora <= '${dataFim}'`;
         }
         if (filtroSensor != '') {
             filtroSensor = 'where' + filtroSensor
