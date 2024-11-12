@@ -1,0 +1,46 @@
+name: Deploy
+
+on:
+  workflow_run:
+    workflows: ["CI Pipeline"]  # Nome exato do workflow de CI
+    types:
+      - completed
+
+jobs:
+  deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: SSH Setup
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.AWS_SSH_PUB_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          echo "StrictHostKeyChecking no" >> ~/.ssh/config
+          echo "Host *" >> ~/.ssh/config
+          echo "    ServerAliveInterval 20" >> ~/.ssh/config
+          echo "    TCPKeepAlive no" >> ~/.ssh/config
+          eval "$(ssh-agent -s)"
+          ssh-add ~/.ssh/id_rsa
+
+      - name: Deploy
+        run: |
+          echo "Iniciando o processo de deploy..."
+          ssh -i ~/.ssh/id_rsa -o "StrictHostKeyChecking=no" ubuntu@"${{ secrets.AWS_HOST }}" << 'EOF'
+            echo "Finalizando processos Node.js existentes..."
+            pkill -f "node build/main.js" || echo "Processo Node.js não está rodando."
+            echo "Atualizando o repositório..."
+            cd API_4_BACK
+            git pull origin main
+            echo "Instalando dependências..."
+            npm install
+            echo "Compilando o código TypeScript..."
+            npx tsc
+            echo "Iniciando a aplicação..."
+            nohup node build/main.js > output.log 2>&1 &
+            echo "Deploy concluído com sucesso."
+          EOF
