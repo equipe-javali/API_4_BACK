@@ -183,26 +183,23 @@ function ChecaAlerta(alerta: IAlertaParametro, valor: number) {
 async function TratarDados() {
     const redis = await redisStartConnection();
     const chaves = await redis.keys("*");
-    
-    for (let chaveIndex = 0; chaveIndex < chaves.length; chaveIndex++) {
-        const conteudoChave = await redis.get(chaves[chaveIndex]);
-        if (conteudoChave == null)
-            continue;
+
+    for (const chave of chaves) {
+        const conteudoChave = await redis.get(chave);
+        if (conteudoChave == null) continue;
 
         const dadosMedicao: IDadosEstacao = JSON.parse(conteudoChave);
         const alertas: Array<IAlertaParametro> = await ListagemAlertas(dadosMedicao.uid);
 
         const parametrosMedicao = Object.getOwnPropertyNames(dadosMedicao).filter((n) => n != "uid" && n != "uxt");
-        for (let paramIndex = 0; paramIndex < parametrosMedicao.length; paramIndex++) {
-            const nomeParametro = parametrosMedicao[paramIndex];
-            if ((await EstacaoPossuiSensorParametro(dadosMedicao.uid, nomeParametro)) == false)
-                continue;
+        for (const nomeParametro of parametrosMedicao) {
+            if (!(await EstacaoPossuiSensorParametro(dadosMedicao.uid, nomeParametro))) continue;
 
             const valorMedicao = parseFloat(dadosMedicao[nomeParametro]);
             const valorTratado = await TratarParametro(dadosMedicao.uid, nomeParametro, valorMedicao);
 
             const timezoneOffset = -3 * 60 * 60 * 1000;
-            const dataCorrigida = new Date(Math.floor(parseFloat(dadosMedicao.uxt)) * 1000 + timezoneOffset).toISOString()
+            const dataCorrigida = new Date(Math.floor(parseFloat(dadosMedicao.uxt)) * 1000 + timezoneOffset).toISOString();
             const medicao: ICadastrarMedicao = {
                 sensor: {
                     id: await GetSensorID(dadosMedicao.uid, nomeParametro)
@@ -212,17 +209,16 @@ async function TratarDados() {
             } as ICadastrarMedicao;
             await RegistrarMedicao(medicao);
 
-            for (let alertaIndex = 0; alertaIndex < alertas.length; alertaIndex++) {
-                if (alertas[alertaIndex].nome_json != nomeParametro)
-                    continue;
+            for (const alerta of alertas) {
+                if (alerta.nome_json !== nomeParametro) continue;
 
-                if (ChecaAlerta(alertas[alertaIndex], valorTratado)) {
-                    await RegistrarOcorrenciaAlerta(dadosMedicao.uid, alertas[alertaIndex], medicao);
-                }
-            }
-        }
+                if (ChecaAlerta(alerta, valorTratado)) {
+                    await RegistrarOcorrenciaAlerta(dadosMedicao.uid, alerta, medicao);
+                };
+            };
+        };
 
-        redis.del(chaves[chaveIndex]);
+        await redis.del(chave);
     }
     if (redis) await redis.quit();
 }
