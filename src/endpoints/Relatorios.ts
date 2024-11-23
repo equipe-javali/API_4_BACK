@@ -3,7 +3,7 @@ import express, { Request, Response } from "express";
 import { IResponsePadrao } from "../types/Response";
 import { Pool } from "pg";
 import { StartConnection, EndConnection, Query } from "../services/postgres";
-import { IBarras, IGraficos, iFiltroRelatorios, IPontoMapa, IRelatorios, IArquivo } from "../types/Relatorios";
+import { IBarras, IGraficos, iFiltroRelatorios, IPontoMapa, IRelatorios, IArquivo, ITemperatura } from "../types/Relatorios";
 
 const router = express.Router();
 
@@ -49,21 +49,25 @@ router.post(
         let filtroSensor = ''
         let filtroEstacao = ''
         let filtroAlerta = ''
+        let filtroTemperatura = ''
 
         if (estacoes) {
             const ids = estacoes.join(',')
             filtroMapa = `where id in (${ids})`
             filtroEstacao += ` "a".id_estacao in (${ids})`
+            filtroTemperatura += ` and "a".id_estacao in (${ids})`
         }
         if (dataInicio) {
             filtroSensor += ` "m".data_hora >= '${dataInicio}'`;
             filtroEstacao += (filtroEstacao && " and") + ` "o".data_hora >= '${dataInicio}'`;
             filtroAlerta += `"o".data_hora >= ' ${dataInicio}'`;
+            filtroTemperatura += ` and "m".data_hora >= '${dataInicio}'`;
         }
         if (dataFim) {
             filtroSensor += (filtroSensor && " and") + ` "m".data_hora <= '${dataFim}'`;
             filtroEstacao += (filtroEstacao && " and") + ` "o".data_hora <= '${dataFim}'`;
             filtroAlerta += (filtroAlerta && " and") + ` "o".data_hora <= '${dataFim}'`;
+            filtroTemperatura += ` and "m".data_hora <= '${dataFim}'`
         }
         if (filtroSensor != '') {
             filtroSensor = 'where' + filtroSensor
@@ -105,6 +109,30 @@ router.post(
                 []
             );
 
+            /* RELATÓRIO DE TEMPERATURA */
+            const resultQueryTemperatura = await Query<ITemperatura>(
+                bdConn,
+                `SELECT "s".nome as sensor, "e".nome as estacao, DATE_TRUNC('minute', "m".data_hora) + INTERVAL '15 minutes' * FLOOR(EXTRACT(EPOCH FROM "m".data_hora) / (15 * 60)) AS data_hora, AVG("m".valor_calculado) AS temperatura FROM medicao "m" INNER JOIN sensor "s" ON "s".id = "m".id_sensor INNER JOIN sensorestacao "se" ON "se".id_sensor = "s".id INNER JOIN estacao "e" ON "e".id = "se".id_estacao INNER JOIN parametro "p" ON "p".id = "s".id_parametro WHERE "s".nome IN ('Sensor Fº', 'Sensor Kº', 'Sensor Cº')${filtroAlerta} GROUP BY "s".id, "e".id, "p".id, data_hora;`,
+                []
+            );
+            
+            console.log('Result Query Temperatura:', resultQueryTemperatura);
+
+            const relatoriosTemperaturaTratada: ITemperatura[] = resultQueryTemperatura.rows.map((query: ITemperatura) => {
+                const temperatura: number =
+                    query.sensor === 'Sensor Fº' ? (query.temperatura - 32) * 5 / 9 :
+                        query.sensor === 'Sensor Kº' ? query.temperatura - 273.15 :
+                            query.temperatura;
+
+                return {
+                    sensor: query.sensor,
+                    estacao: query.estacao,
+                    data_hora: query.data_hora,
+                    temperatura: temperatura
+                };
+            });
+
+
             const relatorios: IRelatorios = {
                 mapaEstacoes: {
                     dados: resultQueryMapaEstacoes.rows.map((ponto: IPontoMapa) => [ponto.longitude, ponto.latitude]),
@@ -125,6 +153,11 @@ router.post(
                     dados: resultQueryOcorrenciaAlerta.rows.map((dado: IBarras) => [dado.x.toString(), dado.y.toString()]),
                     subtitulos: ['Alerta (nome)', 'Ocorrência (quantidade)'],
                     titulo: 'Quantidade de ocorrências por alerta'
+                },
+                temperatura: {
+                    dados: relatoriosTemperaturaTratada.map((dado: ITemperatura) => [dado.sensor, dado.estacao, dado.data_hora.toString(), dado.temperatura.toString()]),
+                    subtitulos: ['Sensor (nome)', 'Estação (nome)', 'Data e hora (data)', 'Temperatura (º C)'],
+                    titulo: 'Temperatura por sensor a cada 15 minutos'
                 }
             };
 
