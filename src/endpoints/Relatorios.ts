@@ -116,6 +116,21 @@ router.post(
                 []
             );
 
+            /* NORMALIZAÇÃO DAS TEMPERATURAS PARA ºC */
+            const relatoriosTemperaturaTratada: ITemperatura[] = resultQueryTemperatura.rows.map((query: ITemperatura) => {
+                const temperatura: number =
+                    query.sensor === 'Sensor Fº' ? (query.temperatura - 32) * 5 / 9 :
+                        query.sensor === 'Sensor Kº' ? query.temperatura - 273.15 :
+                            query.temperatura;
+
+                return {
+                    sensor: query.sensor,
+                    estacao: query.estacao,
+                    data_hora: query.data_hora,
+                    temperatura: temperatura
+                };
+            });
+
             const relatorios: IRelatorios = {
                 mapaEstacoes: {
                     dados: resultQueryMapaEstacoes.rows.map((ponto: IPontoMapa) => [ponto.longitude, ponto.latitude]),
@@ -138,7 +153,7 @@ router.post(
                     titulo: 'Quantidade de ocorrências por alerta'
                 },
                 temperatura: {
-                    dados: resultQueryTemperatura.map((dado: ITemperatura) => [dado.sensor, dado.estacao, dado.data_hora.toString(), dado.temperatura.toString()]),
+                    dados: relatoriosTemperaturaTratada.map((dado: ITemperatura) => [dado.sensor, dado.estacao, dado.data_hora.toString(), dado.temperatura.toString()]),
                     subtitulos: ['Sensor (nome)', 'Estação (nome)', 'Data e hora (data)', 'Temperatura (ºC)'],
                     titulo: 'Temperatura por sensor a cada 15 minutos'
                 }
