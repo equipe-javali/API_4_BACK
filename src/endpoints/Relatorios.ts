@@ -3,7 +3,7 @@ import express, { Request, Response } from "express";
 import { IResponsePadrao } from "../types/Response";
 import { Pool } from "pg";
 import { StartConnection, EndConnection, Query } from "../services/postgres";
-import { IBarras, IGraficos, iFiltroRelatorios, IPontoMapa, IRelatorios, IArquivo, ITemperatura } from "../types/Relatorios";
+import { IBarras, IGraficos, IFiltroRelatorios, IPontoMapa, IRelatorios, IArquivo, ITemperatura } from "../types/Relatorios";
 
 const router = express.Router();
 
@@ -43,7 +43,7 @@ router.post(
             dataInicio,
             dataFim,
             estacoes,
-        } = req.body as iFiltroRelatorios;
+        } = req.body as IFiltroRelatorios;
 
         let filtroMapa = ''
         let filtroSensor = ''

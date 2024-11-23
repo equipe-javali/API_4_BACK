@@ -15,7 +15,7 @@ export interface ITemperatura {
     temperatura: number
 }
 
-export interface iFiltroRelatorios {
+export interface IFiltroRelatorios {
     dataInicio?: Date,
     dataFim?: Date,
     estacoes?: number[]
