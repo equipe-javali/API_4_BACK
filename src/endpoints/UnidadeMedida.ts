@@ -1,5 +1,5 @@
 import express, { Request, Response } from "express";
-import { IAtualizarParametro, ICadastrarParametro, IDeletarParametro, IListarParametro } from "../types/Parametro";
+import { IListarParametro } from "../types/Parametro";
 import { IResponsePadrao } from "../types/Response";
 import { Pool } from "pg";
 import { StartConnection, EndConnection, Query } from "../services/postgres";
