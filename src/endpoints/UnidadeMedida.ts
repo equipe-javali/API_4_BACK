@@ -48,8 +48,8 @@ router.get(
 
             const resultQuery = await Query<IListarParametro>(
                 bdConn,
-                `select * from unidade_medida where id = ${id};`,
-                []
+                `select * from unidade_medida where id = $1;`,
+                [id]
             );
 
             if (!resultQuery.rows.length) {

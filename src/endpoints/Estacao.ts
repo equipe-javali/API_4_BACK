@@ -51,8 +51,8 @@ router.get(
 
             const resultQuery = await Query<IListarEstacao>(
                 bdConn,
-                `select * from estacao where id = ${id};`,
-                []
+                `select * from estacao where id = $1;`,
+                [id]
             );
 
             if (!resultQuery.rows.length) {
@@ -324,8 +324,8 @@ router.patch(
 
             await Query<IAtualizarEstacao>(
                 bdConn,
-                `UPDATE estacao SET ${valoresQuery.join(", ")} WHERE id = ${id};`,
-                []
+                `UPDATE estacao SET ${valoresQuery.join(", ")} WHERE id = $1;`,
+                [id]
             );
 
             // Remova toda a lógica de gerenciamento de sensores daqui
@@ -386,8 +386,8 @@ router.delete(
 
             await Query<IDeletarEstacao>(
                 bdConn,
-                `delete from estacao where id = ${id};`,
-                []
+                `delete from estacao where id = $1;`,
+                [id]
             );
 
             const retorno = {

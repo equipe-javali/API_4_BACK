@@ -123,8 +123,8 @@ router.get(
 
             const resultQuery = await Query<IListarOcorrencia>(
                 bdConn,
-                `select * from ocorrencia where id = ${id};`,
-                []
+                `select * from ocorrencia where id = $1;`,
+                [id]
             );
 
             if (!resultQuery.rows.length) {

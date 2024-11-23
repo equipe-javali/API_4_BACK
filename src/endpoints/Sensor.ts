@@ -51,8 +51,8 @@ router.get(
 
             const resultQuery = await Query<IListarSensor>(
                 bdConn,
-                `select * from sensor where id = ${id};`,
-                []
+                `select * from sensor where id = $1;`,
+                [id]
             );
 
             if (!resultQuery.rows.length) {
@@ -274,8 +274,8 @@ router.patch(
 
             await Query<IAtualizarSensor>(
                 bdConn,
-                `update sensor set ${valoresQuery.join(", ")} where id = ${id};`,
-                []
+                `update sensor set ${valoresQuery.join(", ")} where id = $1;`,
+                [id]
             );
 
             const retorno = {
@@ -334,8 +334,8 @@ router.delete(
 
             await Query<IDeletarSensor>(
                 bdConn,
-                `delete from sensor where id = ${id};`,
-                []
+                `delete from sensor where id = $1;`,
+                [id]
             );
 
             const retorno = {

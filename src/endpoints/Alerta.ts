@@ -51,8 +51,8 @@ router.get(
 
             const resultQuery = await Query<IListarAlerta>(
                 bdConn,
-                `select * from alerta where id = ${id};`,
-                []
+                `select * from alerta where id = $1;`,
+                [id]
             );
 
             if (!resultQuery.rows.length) {
@@ -302,8 +302,8 @@ router.patch(
 
             await Query<IAtualizarAlerta>(
                 bdConn,
-                `UPDATE alerta SET ${valoresQuery.join(", ")} WHERE id = ${id};`,
-                []
+                `UPDATE alerta SET ${valoresQuery.join(", ")} WHERE id = $1;`,
+                [id]
             );
 
             const retorno = {
@@ -361,8 +361,8 @@ router.delete(
 
             await Query<IDeletarAlerta>(
                 bdConn,
-                `delete from alerta where id = ${id};`,
-                []
+                `delete from alerta where id = $1;`,
+                [id]
             );
 
             const retorno = {

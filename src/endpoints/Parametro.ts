@@ -49,8 +49,8 @@ router.get(
 
             const resultQuery = await Query<IListarParametro>(
                 bdConn,
-                `select * from parametro where id = ${id};`,
-                []
+                `select * from parametro where id = $1;`,
+                [id]
             );
 
             if (!resultQuery.rows.length) {
@@ -295,8 +295,8 @@ router.patch(
 
             await Query<IAtualizarParametro>(
                 bdConn,
-                `update parametro set ${valoresQuery.join(", ")} where id = ${id};`,
-                []
+                `update parametro set ${valoresQuery.join(", ")} where id = $1;`,
+                [id]
             );
 
             const retorno = {
@@ -354,8 +354,8 @@ router.delete(
 
             await Query<IDeletarParametro>(
                 bdConn,
-                `delete from parametro where id = ${id};`,
-                []
+                `delete from parametro where id = $1;`,
+                [id]
             );
 
             const retorno = {
