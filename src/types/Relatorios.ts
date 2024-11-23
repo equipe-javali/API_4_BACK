@@ -8,6 +8,13 @@ export interface IBarras {
     x: string
 }
 
+export interface ITemperatura {
+    sensor: string,
+    estacao: string,
+    data_hora: Date,
+    temperatura: number
+}
+
 export interface iFiltroRelatorios {
     dataInicio?: Date,
     dataFim?: Date,
@@ -29,5 +36,6 @@ export interface IRelatorios {
     mapaEstacoes: IGraficos,
     alertaPorEstacoes: IGraficos,
     medicaoPorSensor: IGraficos,
-    ocorrenciaPorAlerta: IGraficos
+    ocorrenciaPorAlerta: IGraficos,
+    temperatura: IGraficos
 };
