@@ -44,7 +44,7 @@ router.get(
 
         let bdConn: Pool | null = null;
         try {
-            bdConn = await StartConnection();
+            bdConn = StartConnection();
 
             const resultQuery = await Query<IListarParametro>(
                 bdConn,
@@ -100,7 +100,7 @@ router.get(
     async function (req: Request, res: Response) {
         let bdConn: Pool | null = null;
         try {
-            bdConn = await StartConnection();
+            bdConn = StartConnection();
 
             const resultQuery = await Query<IListarParametro>(
                 bdConn,

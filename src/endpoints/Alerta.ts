@@ -47,7 +47,7 @@ router.get(
 
         let bdConn: Pool | null = null;
         try {
-            bdConn = await StartConnection();
+            bdConn = StartConnection();
 
             const resultQuery = await Query<IListarAlerta>(
                 bdConn,
@@ -122,7 +122,7 @@ router.get(
 
         let bdConn: Pool | null = null;
         try {
-            bdConn = await StartConnection();
+            bdConn = StartConnection();
 
             const resultQuery = await Query<IListarAlerta>(
                 bdConn,
@@ -204,7 +204,7 @@ router.post(
 
         let bdConn: Pool | null = null;
         try {
-            bdConn = await StartConnection();
+            bdConn = StartConnection();
 
             const resultQuery = await Query<ICadastrarAlerta>(
                 bdConn,
@@ -291,7 +291,7 @@ router.patch(
 
         let bdConn: Pool | null = null;
         try {
-            bdConn = await StartConnection();
+            bdConn = StartConnection();
 
             let valoresQuery: Array<string> = [];
             if (id_estacao !== undefined) valoresQuery.push(`id_estacao = '${id_estacao}'`);
@@ -357,7 +357,7 @@ router.delete(
 
         let bdConn: Pool | null = null;
         try {
-            bdConn = await StartConnection();
+            bdConn = StartConnection();
 
             await Query<IDeletarAlerta>(
                 bdConn,

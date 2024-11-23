@@ -86,7 +86,7 @@ router.post(
 
         let bdConn: Pool | null = null;
         try {
-            bdConn = await StartConnection();
+            bdConn = StartConnection();
 
             // Hash da senha antes de armazenar no banco de dados
             const senhaHashed = HashPassword(senha);
@@ -174,7 +174,7 @@ router.post(
 
         let bdConn: Pool | null = null;
         try {
-            bdConn = await StartConnection();
+            bdConn = StartConnection();
 
             const user = await authenticateUser(email, senha, bdConn);
 
@@ -258,7 +258,7 @@ router.get(
     async (req: Request, res: Response) => {
         let bdConn: Pool | null = null;
         try {
-            bdConn = await StartConnection();
+            bdConn = StartConnection();
 
             const resultQuery = await Query<IListarUsuario>(
                 bdConn,
@@ -338,7 +338,7 @@ router.get(
 
         let bdConn: Pool | null = null;
         try {
-            bdConn = await StartConnection();
+            bdConn = StartConnection();
 
             const resultQuery = await Query<IListarUsuario>(
                 bdConn,
@@ -471,7 +471,7 @@ router.patch(
 
         let bdConn: Pool | null = null;
         try {
-            bdConn = await StartConnection();
+            bdConn = StartConnection();
 
             // Atualizar o usuário com o novo nome, email e senha
             const updatedUser = await updateUser(id.toString(), bdConn, nome, email, senha);
@@ -544,7 +544,7 @@ router.delete(
 
         let bdConn: Pool | null = null;
         try {
-            bdConn = await StartConnection();
+            bdConn = StartConnection();
 
             const resultQuery = await Query<IDeletarUsuario>(
                 bdConn,

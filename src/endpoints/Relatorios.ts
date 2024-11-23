@@ -80,7 +80,7 @@ router.post(
         }
         let bdConn: Pool | null = null;
         try {
-            bdConn = await StartConnection();
+            bdConn = StartConnection();
             /* MAPA DAS ESTAÇÕES */
             const resultQueryMapaEstacoes = await Query<IPontoMapa>(
                 bdConn,

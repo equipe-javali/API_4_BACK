@@ -43,7 +43,7 @@ router.get(
 
         let bdConn: Pool | null = null;
         try {
-            bdConn = await StartConnection();
+            bdConn = StartConnection();
 
             const resultQuery = await Query<IListarOcorrencia>(
                 bdConn,
@@ -119,7 +119,7 @@ router.get(
 
         let bdConn: Pool | null = null;
         try {
-            bdConn = await StartConnection();
+            bdConn = StartConnection();
 
             const resultQuery = await Query<IListarOcorrencia>(
                 bdConn,
@@ -200,7 +200,7 @@ router.get(
 
         let bdConn: Pool | null = null;
         try {
-            bdConn = await StartConnection();
+            bdConn = StartConnection();
 
             const resultQuery = await Query<IListarOcorrencia>(
                 bdConn,
@@ -263,7 +263,7 @@ router.get(
 
         let bdConn: Pool | null = null;
         try {
-            bdConn = await StartConnection();
+            bdConn = StartConnection();
 
             const resultQuery = await Query<IListarOcorrencia>(
                 bdConn,

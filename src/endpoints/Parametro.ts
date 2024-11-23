@@ -45,7 +45,7 @@ router.get(
 
         let bdConn: Pool | null = null;
         try {
-            bdConn = await StartConnection();
+            bdConn = StartConnection();
 
             const resultQuery = await Query<IListarParametro>(
                 bdConn,
@@ -118,7 +118,7 @@ router.get(
 
         let bdConn: Pool | null = null;
         try {
-            bdConn = await StartConnection();
+            bdConn = StartConnection();
 
             const resultQuery = await Query<IListarParametro>(
                 bdConn,
@@ -202,7 +202,7 @@ router.post(
 
         let bdConn: Pool | null = null;
         try {
-            bdConn = await StartConnection();
+            bdConn = StartConnection();
 
             await Query<ICadastrarParametro>(
                 bdConn,
@@ -285,7 +285,7 @@ router.patch(
 
         let bdConn: Pool | null = null;
         try {
-            bdConn = await StartConnection();
+            bdConn = StartConnection();
 
             let valoresQuery: Array<string> = [];
             if (nome != undefined) valoresQuery.push(`nome = '${nome}'`);
@@ -350,7 +350,7 @@ router.delete(
 
         let bdConn: Pool | null = null;
         try {
-            bdConn = await StartConnection();
+            bdConn = StartConnection();
 
             await Query<IDeletarParametro>(
                 bdConn,

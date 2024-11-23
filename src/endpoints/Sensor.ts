@@ -47,7 +47,7 @@ router.get(
 
         let bdConn: Pool | null = null;
         try {
-            bdConn = await StartConnection();
+            bdConn = StartConnection();
 
             const resultQuery = await Query<IListarSensor>(
                 bdConn,
@@ -120,7 +120,7 @@ router.get(
 
         let bdConn: Pool | null = null;
         try {
-            bdConn = await StartConnection();
+            bdConn = StartConnection();
 
             const resultQuery = await Query<IListarSensor>(
                 bdConn,
@@ -188,7 +188,7 @@ router.post(
         } = req.body as ICadastrarSensor;
         let bdConn: Pool | null = null;
         try {
-            bdConn = await StartConnection();
+            bdConn = StartConnection();
 
             const resultQuery = await Query<ICadastrarSensor>(
                 bdConn,
@@ -266,7 +266,7 @@ router.patch(
 
         let bdConn: Pool | null = null;
         try {
-            bdConn = await StartConnection();
+            bdConn = StartConnection();
 
             let valoresQuery: Array<string> = [];
             if (nome != undefined) valoresQuery.push(`nome = '${nome}'`);
@@ -330,7 +330,7 @@ router.delete(
 
         let bdConn: Pool | null = null;
         try {
-            bdConn = await StartConnection();
+            bdConn = StartConnection();
 
             await Query<IDeletarSensor>(
                 bdConn,
