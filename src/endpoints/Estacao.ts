@@ -1,5 +1,5 @@
 import express, { Request, Response } from "express";
-import { IAtualizarEstacao, ICadastrarEstacao, IDeletarEstacao, IListarEstacao } from "../types/Estacao";
+import { IAtualizarEstacao, ICadastrarEstacao, IDeletarEstacao, IListarEstacao, ISensor } from "../types/Estacao";
 import { IResponsePadrao } from "../types/Response";
 import { Pool } from "pg";
 import { StartConnection, EndConnection, Query } from "../services/postgres";
@@ -69,7 +69,7 @@ router.get(
             const estacao = resultQuery[0];
 
             // Buscar sensores associados
-            const sensoresQuery = await Query(
+            const sensoresQuery = await Query<ISensor>(
                 bdConn,
                 `select sensor.id, sensor.nome from sensor
                  join sensorestacao on sensor.id = sensorestacao.id_sensor
@@ -143,7 +143,7 @@ router.get(
 
             // Buscar sensores associados para cada estação
             for (const estacao of estacoes) {
-                const sensoresQuery = await Query(
+                const sensoresQuery = await Query<ISensor>(
                     bdConn,
                     `select sensor.id, sensor.nome from sensor
                      join sensorestacao on sensor.id = sensorestacao.id_sensor

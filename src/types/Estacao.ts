@@ -6,13 +6,19 @@ export interface ICadastrarEstacao {
     mac_address: string
 };
 
+export interface ISensor {
+    id: number,
+    nome: string
+};
+
 export interface IListarEstacao {
     id: number,
     nome: string,
     endereco: string,
     latitude: number,
     longitude: number,
-    mac_address: string
+    mac_address: string,
+    sensores: ISensor[]
 };
 
 export interface IAtualizarEstacao {
