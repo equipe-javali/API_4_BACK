@@ -4,7 +4,7 @@ import { StartConnection as redisStartConnection } from "./redis";
 import { IAlertaParametro, ICadastrarMedicao, IDadosEstacao } from "../types/RecepcaoDados";
 
 // checa se a estação possui um sensor com o parametro
-async function EstacaoPossuiSensorParametro(macEscacao: string, nomeParametro: string) {
+async function EstacaoPossuiSensorParametro(macEscacao: string, nomeParametro: string): Promise<boolean> {
     let retorno = false;
 
     let postgres: Pool | null = null;
@@ -33,13 +33,12 @@ async function EstacaoPossuiSensorParametro(macEscacao: string, nomeParametro: s
 }
 
 async function TratarParametro(macEscacao: string, nomeParametro: string, valorMedido: number) {
-    let valorTratado: number = valorMedido;
 
     let postgres: Pool | null = null;
     try {
         postgres = StartConnection();
 
-        const resultQuery = await Query(
+        const resultQuery = await Query<{ fator: string, valor_offset: string }>(
             postgres,
             `select fator, valor_offset from estacao
                 join sensorestacao on estacao.id = id_estacao
@@ -50,17 +49,16 @@ async function TratarParametro(macEscacao: string, nomeParametro: string, valorM
         );
 
         if (resultQuery.length > 0) {
-            valorTratado *= parseFloat(resultQuery[0].fator);
-            valorTratado += parseFloat(resultQuery[0].valor_offset);
-        } else {
-            console.log(`falha ao tratar dados: Parâmetro não encontrado`);
+            const fator = parseFloat(resultQuery[0].fator);
+            const offset = parseFloat(resultQuery[0].valor_offset);
+            return valorMedido * fator + offset;
         }
+        console.log(`Falha ao tratar dados: Parâmetro não encontrado`);
     } catch (err) {
         console.log(`falha ao tratar dados: ${(err as Error).message}`);
     }
     if (postgres) EndConnection(postgres);
-
-    return valorTratado;
+    return valorMedido;
 }
 
 async function RegistrarMedicao(medicao: ICadastrarMedicao) {
@@ -81,8 +79,6 @@ async function RegistrarMedicao(medicao: ICadastrarMedicao) {
 }
 
 async function GetSensorID(macEscacao: string, nomeParametro: string) {
-    let id: number = -1;
-
     let postgres: Pool | null = null;
     try {
         postgres = StartConnection();
@@ -96,21 +92,19 @@ async function GetSensorID(macEscacao: string, nomeParametro: string) {
                 where estacao.mac_address = $1 and parametro.nome_json = $2;`,
             [macEscacao, nomeParametro]
         );
-
         if (resultQuery.length > 0) {
-            id = resultQuery[0].id;
-        } else {
-            console.log(`falha ao tratar dados: Parâmetro não encontrado`);
+            return resultQuery[0].id;
         }
+        console.log(`Falha ao tratar dados: Parâmetro não encontrado`);
     } catch (err) {
         console.log(`falha ao tratar dados: ${(err as Error).message}`);
     }
     if (postgres) EndConnection(postgres);
 
-    return id;
+    return -1;
 }
 
-async function RegistrarOcorrenciaAlerta(macEstacao: string, alerta: IAlertaParametro, medicao: ICadastrarMedicao) {
+async function RegistrarOcorrenciaAlerta(alerta: IAlertaParametro, medicao: ICadastrarMedicao) {
     let postgres: Pool | null = null;
     try {
         postgres = StartConnection();
@@ -127,9 +121,7 @@ async function RegistrarOcorrenciaAlerta(macEstacao: string, alerta: IAlertaPara
     if (postgres) EndConnection(postgres);
 }
 
-async function ListagemAlertas(macEstacao: string) {
-    let alertas: Array<IAlertaParametro> = [];
-
+async function ListagemAlertas(macEstacao: string): Promise<IAlertaParametro[]> {
     let postgres: Pool | null = null;
     try {
         postgres = StartConnection();
@@ -144,41 +136,32 @@ async function ListagemAlertas(macEstacao: string) {
         );
 
         if (resultQuery.length > 0) {
-            alertas = resultQuery;
+            return resultQuery;
         }
     } catch (err) {
         console.log(`falha ao registrar ocorrência: ${(err as Error).message}`);
     }
     if (postgres) EndConnection(postgres);
 
-    return alertas;
+    return [];
 }
 
-function ChecaAlerta(alerta: IAlertaParametro, valor: number) {
+function ChecaAlerta(alerta: IAlertaParametro, valor: number): boolean {
     switch (alerta.condicao) {
         case "<":
-            if (valor < alerta.valor)
-                return true;
-            break;
+            return valor < alerta.valor;
         case ">":
-            if (valor > alerta.valor)
-                return true;
-            break;
+            return valor > alerta.valor;
         case "<=":
-            if (valor <= alerta.valor)
-                return true;
-            break;
+            return valor <= alerta.valor;
         case ">=":
-            if (valor <= alerta.valor)
-                return true;
-            break;
+            return valor >= alerta.valor;
         case "=":
-            if (valor == alerta.valor)
-                return true;
-            break;
-    }
-    return false;
-}
+            return valor === alerta.valor;
+        default:
+            return false;
+    };
+};
 
 async function TratarDados() {
     const redis = await redisStartConnection();
@@ -214,15 +197,15 @@ async function TratarDados() {
                 if (alerta.nome_json !== nomeParametro) continue;
 
                 if (ChecaAlerta(alerta, valorTratado)) {
-                    await RegistrarOcorrenciaAlerta(dadosMedicao.uid, alerta, medicao);
+                    await RegistrarOcorrenciaAlerta(alerta, medicao);
                 };
             };
         };
 
         await redis.del(chave);
-    }
+    };
     if (redis) await redis.quit();
-}
+};
 
 export {
     TratarDados
