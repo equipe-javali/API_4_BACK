@@ -121,10 +121,14 @@ router.post(
 
             /* NORMALIZAÇÃO DAS TEMPERATURAS PARA ºC */
             const relatoriosTemperaturaTratada: ITemperatura[] = resultQueryTemperatura.map((query: ITemperatura) => {
-                const temperatura: number =
-                    query.sensor === 'Sensor Fº' ? (query.temperatura - 32) * 5 / 9 :
-                        query.sensor === 'Sensor Kº' ? query.temperatura - 273.15 :
-                            query.temperatura;
+                let temperatura: number;
+                if (query.sensor === 'Sensor Fº') {
+                    temperatura = (query.temperatura - 32) * 5 / 9;
+                } else if (query.sensor === 'Sensor Kº') {
+                    temperatura = query.temperatura - 273.15;
+                } else {
+                    temperatura = query.temperatura;
+                }
 
                 return {
                     sensor: query.sensor,
