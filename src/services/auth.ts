@@ -24,11 +24,11 @@ export async function authenticateUser(email: string, senha: string, bdConn: Poo
         [email]
     );
 
-    if (resultQuery.rows.length === 0) {
+    if (resultQuery.length === 0) {
         throw new Error("Usuário não encontrado");
     }
 
-    const user = resultQuery.rows[0];
+    const user = resultQuery[0];
     const isPasswordValid = HashPasswordCompare(user.senha, senha);
 
     if (!isPasswordValid) {
@@ -95,9 +95,9 @@ export async function updateUser(id: string, bdConn: Pool, novoNome?: string, no
         values
     );
 
-    if (resultQuery.rows.length === 0) {
+    if (resultQuery.length === 0) {
         throw new Error("Usuário não encontrado");
     }
 
-    return resultQuery.rows[0];
+    return resultQuery[0];
 }

@@ -55,7 +55,7 @@ router.get(
                 [id]
             );
 
-            if (!resultQuery.rows.length) {
+            if (!resultQuery.length) {
                 const retorno = {
                     errors: [`estação com id (${id}) não existe`],
                     msg: [],
@@ -66,7 +66,7 @@ router.get(
                 return;
             }
 
-            const estacao = resultQuery.rows[0];
+            const estacao = resultQuery[0];
 
             // Buscar sensores associados
             const sensoresQuery = await Query(
@@ -77,14 +77,13 @@ router.get(
                 []
             );
 
-            estacao.sensores = sensoresQuery.rows;
+            estacao.sensores = sensoresQuery;
 
             const retorno = {
                 errors: [],
                 msg: ["estação listada com sucesso"],
                 data: {
-                    rows: [estacao],
-                    fields: resultQuery.fields
+                    rows: [estacao]
                 }
             } as IResponsePadrao;
             res.status(200).send(retorno);
@@ -140,7 +139,7 @@ router.get(
                 [quantidade, pagina]
             );
 
-            const estacoes = resultQuery.rows;
+            const estacoes = resultQuery;
 
             // Buscar sensores associados para cada estação
             for (const estacao of estacoes) {
@@ -151,15 +150,14 @@ router.get(
                      where sensorestacao.id_estacao = $1;`,
                     [estacao.id]
                 );
-                estacao.sensores = sensoresQuery.rows;
+                estacao.sensores = sensoresQuery;
             }
 
             const retorno = {
                 errors: [],
                 msg: ["estações listadas com sucesso"],
                 data: {
-                    rows: estacoes,
-                    fields: resultQuery.fields
+                    rows: estacoes
                 }
             } as IResponsePadrao;
             res.status(200).send(retorno);
@@ -235,7 +233,7 @@ router.post(
             const retorno = {
                 errors: [],
                 msg: ["estação cadastrada com sucesso"],
-                data: resultQuery.rows[0]
+                data: resultQuery[0]
             } as IResponsePadrao;
             res.status(200).send(retorno);
         } catch (err) {

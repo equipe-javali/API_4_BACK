@@ -52,7 +52,7 @@ router.get(
                 [id]
             );
 
-            if (!resultQuery.rows.length) {
+            if (!resultQuery.length) {
                 const retorno = {
                     errors: [`unidade de medida com id (${id}) não existe`],
                     msg: [],
@@ -67,8 +67,7 @@ router.get(
                 errors: [],
                 msg: ["unidade de medida listada com sucesso"],
                 data: {
-                    rows: resultQuery.rows,
-                    fields: resultQuery.fields
+                    rows: resultQuery
                 }
             } as IResponsePadrao;
             res.status(200).send(retorno);
@@ -112,8 +111,7 @@ router.get(
                 errors: [],
                 msg: ["unidades de medida listadas com sucesso"],
                 data: {
-                    rows: resultQuery.rows,
-                    fields: resultQuery.fields
+                    rows: resultQuery
                 }
             } as IResponsePadrao;
             res.status(200).send(retorno);

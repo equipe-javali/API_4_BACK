@@ -55,7 +55,7 @@ router.get(
                 [id]
             );
 
-            if (!resultQuery.rows.length) {
+            if (!resultQuery.length) {
                 const retorno = {
                     errors: [`Alerta com o id (${id}) não existe`],
                     msg: [],
@@ -66,14 +66,13 @@ router.get(
                 return;
             };
 
-            const alerta = resultQuery.rows[0];
+            const alerta = resultQuery[0];
 
             const retorno = {
                 errors: [],
                 msg: ["Alerta listado com sucesso"],
                 data: {
-                    rows: [alerta],
-                    fields: resultQuery.fields
+                    rows: [alerta]
                 }
             } as IResponsePadrao;
             res.status(200).send(retorno);
@@ -130,14 +129,13 @@ router.get(
                 [quantidade, pagina]
             );
 
-            const alertas = resultQuery.rows;
+            const alertas = resultQuery;
 
             const retorno = {
                 errors: [],
                 msg: ["Alertas listados com sucesso"],
                 data: {
-                    rows: alertas,
-                    fields: resultQuery.fields
+                    rows: alertas
                 }
             } as IResponsePadrao;
             res.status(200).send(retorno);
@@ -215,7 +213,7 @@ router.post(
             const retorno = {
                 errors: [],
                 msg: ["Alerta cadastrado com sucesso"],
-                data: resultQuery.rows[0]
+                data: resultQuery[0]
             } as IResponsePadrao;
             res.status(200).send(retorno);
         } catch (err) {

@@ -21,7 +21,7 @@ async function EstacaoPossuiSensorParametro(macEscacao: string, nomeParametro: s
             [macEscacao, nomeParametro]
         );
 
-        if (resultQuery.rows.length > 0) {
+        if (resultQuery.length > 0) {
             retorno = true;
         }
     } catch (err) {
@@ -49,9 +49,9 @@ async function TratarParametro(macEscacao: string, nomeParametro: string, valorM
             [macEscacao, nomeParametro]
         );
 
-        if (resultQuery.rows.length > 0) {
-            valorTratado *= parseFloat(resultQuery.rows[0].fator);
-            valorTratado += parseFloat(resultQuery.rows[0].valor_offset);
+        if (resultQuery.length > 0) {
+            valorTratado *= parseFloat(resultQuery[0].fator);
+            valorTratado += parseFloat(resultQuery[0].valor_offset);
         } else {
             console.log(`falha ao tratar dados: Parâmetro não encontrado`);
         }
@@ -97,8 +97,8 @@ async function GetSensorID(macEscacao: string, nomeParametro: string) {
             [macEscacao, nomeParametro]
         );
 
-        if (resultQuery.rows.length > 0) {
-            id = resultQuery.rows[0].id;
+        if (resultQuery.length > 0) {
+            id = resultQuery[0].id;
         } else {
             console.log(`falha ao tratar dados: Parâmetro não encontrado`);
         }
@@ -143,8 +143,8 @@ async function ListagemAlertas(macEstacao: string) {
             [macEstacao]
         );
 
-        if (resultQuery.rows.length > 0) {
-            alertas = resultQuery.rows;
+        if (resultQuery.length > 0) {
+            alertas = resultQuery;
         }
     } catch (err) {
         console.log(`falha ao registrar ocorrência: ${(err as Error).message}`);

@@ -117,7 +117,7 @@ router.post(
             );
 
             /* NORMALIZAÇÃO DAS TEMPERATURAS PARA ºC */
-            const relatoriosTemperaturaTratada: ITemperatura[] = resultQueryTemperatura.rows.map((query: ITemperatura) => {
+            const relatoriosTemperaturaTratada: ITemperatura[] = resultQueryTemperatura.map((query: ITemperatura) => {
                 const temperatura: number =
                     query.sensor === 'Sensor Fº' ? (query.temperatura - 32) * 5 / 9 :
                         query.sensor === 'Sensor Kº' ? query.temperatura - 273.15 :
@@ -133,22 +133,22 @@ router.post(
 
             const relatorios: IRelatorios = {
                 mapaEstacoes: {
-                    dados: resultQueryMapaEstacoes.rows.map((ponto: IPontoMapa) => [ponto.longitude, ponto.latitude]),
+                    dados: resultQueryMapaEstacoes.map((ponto: IPontoMapa) => [ponto.longitude.toString(), ponto.latitude.toString()]),
                     subtitulos: ['Longitude (coordenada)', 'Latitude (coordenada)'],
                     titulo: 'Coordenadas das estações'
                 },
                 alertaPorEstacoes: {
-                    dados: resultQueryAlertaEstacao.rows.map((dado: IBarras) => [dado.x.toString(), dado.y.toString()]),
+                    dados: resultQueryAlertaEstacao.map((dado: IBarras) => [dado.x.toString(), dado.y.toString()]),
                     subtitulos: ['Estação (nome)', 'Alertas (quantidade)'],
                     titulo: 'Quantidade de alertas por estação'
                 },
                 medicaoPorSensor: {
-                    dados: resultQueryMediaSensor.rows.map((dado: IBarras) => [dado.x.toString(), dado.y.toString()]),
+                    dados: resultQueryMediaSensor.map((dado: IBarras) => [dado.x.toString(), dado.y.toString()]),
                     subtitulos: ['Sensor (nome)', 'Medição (valor)'],
                     titulo: 'Média de medição por sensor'
                 },
                 ocorrenciaPorAlerta: {
-                    dados: resultQueryOcorrenciaAlerta.rows.map((dado: IBarras) => [dado.x.toString(), dado.y.toString()]),
+                    dados: resultQueryOcorrenciaAlerta.map((dado: IBarras) => [dado.x.toString(), dado.y.toString()]),
                     subtitulos: ['Alerta (nome)', 'Ocorrência (quantidade)'],
                     titulo: 'Quantidade de ocorrências por alerta'
                 },
@@ -163,8 +163,7 @@ router.post(
                 errors: [],
                 msg: ["Relatório realizado com sucesso"],
                 data: {
-                    rows: relatorios,
-                    fields: [resultQueryMapaEstacoes.fields, resultQueryMediaSensor.fields, resultQueryAlertaEstacao.fields, resultQueryOcorrenciaAlerta.fields]
+                    rows: relatorios
                 }
             } as IResponsePadrao;
             res.status(200).send(retorno);

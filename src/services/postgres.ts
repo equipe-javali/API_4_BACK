@@ -26,14 +26,20 @@ function EndConnection(conn: Pool) {
     conn.end();
 };
 
-async function Query<T extends QueryResultRow = any>(conn: Pool, query: string, valores: Array<any>): Promise<QueryResultRow> {
-    const result = await conn.query<T>(
-        query,
-        valores
-    );
+async function Query<T extends QueryResultRow = any>(
+    conn: Pool,
+    query: string,
+    valores: Array<any>
+): Promise<T[]> {
+    try {
+        const result = await conn.query<T>(query, valores);
+        return result.rows;
+    } catch (error) {
+        console.error("Erro ao executar a consulta SQL:", error);
+        throw error;
+    }
+}
 
-    return result;
-};
 
 export {
     StartConnection,

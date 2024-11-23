@@ -53,7 +53,7 @@ router.get(
                 [id]
             );
 
-            if (!resultQuery.rows.length) {
+            if (!resultQuery.length) {
                 const retorno = {
                     errors: [`parâmetro com id (${id}) não existe`],
                     msg: [],
@@ -68,8 +68,7 @@ router.get(
                 errors: [],
                 msg: ["parâmetro listado com sucesso"],
                 data: {
-                    rows: resultQuery.rows,
-                    fields: resultQuery.fields
+                    rows: resultQuery
                 }
             } as IResponsePadrao;
             res.status(200).send(retorno);
@@ -130,8 +129,7 @@ router.get(
                 errors: [],
                 msg: ["parâmetros listados com sucesso"],
                 data: {
-                    rows: resultQuery.rows,
-                    fields: resultQuery.fields
+                    rows: resultQuery
                 }
             } as IResponsePadrao;
             res.status(200).send(retorno);

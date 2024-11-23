@@ -57,14 +57,13 @@ router.get(
                 [quantidade, pagina]
             );
 
-            const ocorrencias = resultQuery.rows;
+            const ocorrencias = resultQuery;
 
             const retorno = {
                 errors: [],
                 msg: ["Ocorrências recentes listadas com sucesso"],
                 data: {
-                    rows: [ocorrencias],
-                    fields: resultQuery.fields
+                    rows: [ocorrencias]
                 }
             } as IResponsePadrao;
             res.status(200).send(retorno);
@@ -127,7 +126,7 @@ router.get(
                 [id]
             );
 
-            if (!resultQuery.rows.length) {
+            if (!resultQuery.length) {
                 const retorno = {
                     errors: [`Ocorrência com o id (${id}) não existe`],
                     msg: [],
@@ -138,14 +137,13 @@ router.get(
                 return;
             };
 
-            const ocorrencia = resultQuery.rows[0];
+            const ocorrencia = resultQuery[0];
 
             const retorno = {
                 errors: [],
                 msg: ["Ocorrência listada com sucesso"],
                 data: {
-                    rows: [ocorrencia],
-                    fields: resultQuery.fields
+                    rows: [ocorrencia]
                 }
             } as IResponsePadrao;
             res.status(200).send(retorno);
@@ -208,14 +206,13 @@ router.get(
                 [idAlerta, quantidade, pagina]
             );
 
-            const ocorrência = resultQuery.rows;
+            const ocorrência = resultQuery;
 
             const retorno = {
                 errors: [],
                 msg: ["Ocorrências listadas com sucesso"],
                 data: {
-                    rows: ocorrência,
-                    fields: resultQuery.fields
+                    rows: ocorrência
                 }
             } as IResponsePadrao;
             res.status(200).send(retorno);
@@ -271,14 +268,13 @@ router.get(
                 [quantidade, pagina]
             );
 
-            const ocorrência = resultQuery.rows;
+            const ocorrência = resultQuery;
 
             const retorno = {
                 errors: [],
                 msg: ["Ocorrência listadas com sucesso"],
                 data: {
-                    rows: ocorrência,
-                    fields: resultQuery.fields
+                    rows: ocorrência
                 }
             } as IResponsePadrao;
             res.status(200).send(retorno);

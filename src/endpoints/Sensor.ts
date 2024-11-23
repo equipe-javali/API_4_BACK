@@ -55,7 +55,7 @@ router.get(
                 [id]
             );
 
-            if (!resultQuery.rows.length) {
+            if (!resultQuery.length) {
                 const retorno = {
                     errors: [`Sensor com id (${id}) não existe`],
                     msg: [],
@@ -70,8 +70,7 @@ router.get(
                 errors: [],
                 msg: ["Sensor listado com sucesso"],
                 data: {
-                    rows: resultQuery.rows,
-                    fields: resultQuery.fields
+                    rows: resultQuery
                 }
             } as IResponsePadrao;
             res.status(200).send(retorno);
@@ -132,8 +131,7 @@ router.get(
                 errors: [],
                 msg: ["Sensores listados com sucesso"],
                 data: {
-                    rows: resultQuery.rows,
-                    fields: resultQuery.fields
+                    rows: resultQuery
                 }
             } as IResponsePadrao;
             res.status(200).send(retorno);
@@ -199,7 +197,7 @@ router.post(
             const retorno = {
                 errors: [],
                 msg: ["Sensor cadastrado com sucesso"],
-                data: resultQuery.rows[0]
+                data: resultQuery[0]
             } as IResponsePadrao;
             res.status(200).send(retorno);
         } catch (err) {

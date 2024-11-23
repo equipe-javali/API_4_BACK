@@ -100,7 +100,7 @@ router.post(
             const retorno: IResponsePadrao = {
                 errors: [],
                 msg: ["Usuário cadastrado com sucesso"],
-                data: resultQuery.rows[0]
+                data: resultQuery[0]
             };
             res.status(200).send(retorno);
         } catch (err) {
@@ -269,7 +269,7 @@ router.get(
             const retorno = {
                 errors: [],
                 msg: ["Lista de usuários"],
-                data: resultQuery.rows
+                data: resultQuery
             } as IResponsePadrao;
             res.status(200).send(retorno);
         } catch (err) {
@@ -346,7 +346,7 @@ router.get(
                 [userId]
             );
 
-            if (resultQuery.rows.length === 0) {
+            if (resultQuery.length === 0) {
                 return res.status(404).send({
                     errors: ["Usuário não encontrado"],
                     msg: [],
@@ -354,7 +354,7 @@ router.get(
                 } as IResponsePadrao);
             }
 
-            const userData = resultQuery.rows[0];
+            const userData = resultQuery[0];
             const retorno = {
                 errors: [],
                 msg: ["Perfil do usuário"],
@@ -552,7 +552,7 @@ router.delete(
                 [id]
             );
 
-            if (resultQuery.rows.length === 0) {
+            if (resultQuery.length === 0) {
                 const retorno = {
                     errors: [],
                     msg: [`id (${id}) é inválido`],
