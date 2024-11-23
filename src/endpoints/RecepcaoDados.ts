@@ -44,6 +44,14 @@ router.post(
         let redisClient = null;
         try {
             redisClient = await StartConnection();
+            if (!redisClient) {
+                const retorno = {
+                    errors: [],
+                    msg: ["Falha na conexão com o Redis"],
+                    data: null
+                } as IResponsePadrao;
+                return res.status(500).send(retorno);
+            }
             redisClient.set(`${dadosEstacao.uid}:${dadosEstacao.uxt}`, JSON.stringify(dadosEstacao));
 
             const retorno = {

@@ -182,6 +182,7 @@ function ChecaAlerta(alerta: IAlertaParametro, valor: number) {
 
 async function TratarDados() {
     const redis = await redisStartConnection();
+    if (!redis) return
     const chaves = await redis.keys("*");
 
     for (const chave of chaves) {
