@@ -359,7 +359,7 @@ router.delete(
         try {
             bdConn = await StartConnection();
 
-            const resultQuery = await Query<IDeletarAlerta>(
+            await Query<IDeletarAlerta>(
                 bdConn,
                 `delete from alerta where id = ${id};`,
                 []

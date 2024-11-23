@@ -68,7 +68,7 @@ async function RegistrarMedicao(medicao: ICadastrarMedicao) {
     try {
         postgres = StartConnection();
 
-        const resultQuery = await Query(
+        await Query(
             postgres,
             `insert into medicao (id_sensor, data_hora, valor_calculado)
                 values ($1, $2, $3);`,
@@ -115,7 +115,7 @@ async function RegistrarOcorrenciaAlerta(macEstacao: string, alerta: IAlertaPara
     try {
         postgres = StartConnection();
 
-        const resultQuery = await Query(
+        await Query(
             postgres,
             `insert into ocorrencia (id_alerta, data_hora, valor)
                 values ($1, $2, $3);`,

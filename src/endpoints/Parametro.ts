@@ -204,7 +204,7 @@ router.post(
         try {
             bdConn = await StartConnection();
 
-            const resultQuery = await Query<ICadastrarParametro>(
+            await Query<ICadastrarParametro>(
                 bdConn,
                 "insert into parametro (id_unidade, nome, fator, valor_offset, nome_json) values ($1, $2, $3, $4, $5);",
                 [unidade_medida.id, nome, fator, offset, nome_json]
@@ -293,7 +293,7 @@ router.patch(
             if (offset != undefined) valoresQuery.push(`valor_offset = '${offset}'`);
             if (nome_json != undefined) valoresQuery.push(`nome_json = '${nome_json}'`);
 
-            const resultQuery = await Query<IAtualizarParametro>(
+            await Query<IAtualizarParametro>(
                 bdConn,
                 `update parametro set ${valoresQuery.join(", ")} where id = ${id};`,
                 []
@@ -352,7 +352,7 @@ router.delete(
         try {
             bdConn = await StartConnection();
 
-            const resultQuery = await Query<IDeletarParametro>(
+            await Query<IDeletarParametro>(
                 bdConn,
                 `delete from parametro where id = ${id};`,
                 []

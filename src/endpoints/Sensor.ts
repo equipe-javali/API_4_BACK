@@ -272,7 +272,7 @@ router.patch(
             if (nome != undefined) valoresQuery.push(`nome = '${nome}'`);
             if (id_parametro != undefined) valoresQuery.push(`id_parametro = '${id_parametro}'`);
 
-            const resultQuery = await Query<IAtualizarSensor>(
+            await Query<IAtualizarSensor>(
                 bdConn,
                 `update sensor set ${valoresQuery.join(", ")} where id = ${id};`,
                 []
@@ -332,7 +332,7 @@ router.delete(
         try {
             bdConn = await StartConnection();
 
-            const resultQuery = await Query<IDeletarSensor>(
+            await Query<IDeletarSensor>(
                 bdConn,
                 `delete from sensor where id = ${id};`,
                 []

@@ -384,7 +384,7 @@ router.delete(
         try {
             bdConn = await StartConnection();
 
-            const resultQuery = await Query<IDeletarEstacao>(
+            await Query<IDeletarEstacao>(
                 bdConn,
                 `delete from estacao where id = ${id};`,
                 []
@@ -467,7 +467,7 @@ router.post(
         try {
             bdConn = await StartConnection();
 
-            const resultQuery = await Query(
+            await Query(
                 bdConn,
                 "insert into sensorestacao (id_estacao, id_sensor) values ($1, $2);",
                 [id_estacao, id_sensor]
@@ -550,7 +550,7 @@ router.post(
         try {
             bdConn = await StartConnection();
 
-            const resultQuery = await Query(
+            await Query(
                 bdConn,
                 "delete from sensorestacao where id_estacao = $1 and id_sensor = $2;",
                 [id_estacao, id_sensor]
