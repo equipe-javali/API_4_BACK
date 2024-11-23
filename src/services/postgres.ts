@@ -32,14 +32,32 @@ async function Query<T extends QueryResultRow = any>(
     valores: Array<any>
 ): Promise<T[]> {
     try {
-        const result = await conn.query<T>(query, valores);
+        if (!query || typeof query !== "string") {
+            throw new Error("Consulta SQL inválida ou não fornecida.");
+        }
+
+        if (!Array.isArray(valores)) {
+            throw new Error("Os valores fornecidos não são um array.");
+        }
+
+        const sanitizedValues = valores.map((val) => {
+            if (val === null || val === undefined) {
+                return null;
+            }
+            if (typeof val === "string" && val.includes(";")) {
+                throw new Error("Entrada inválida: valores não devem conter caracteres suspeitos.");
+            }
+            return val;
+        });
+
+        const result = await conn.query<T>(query, sanitizedValues);
+
         return result.rows;
     } catch (error) {
         console.error("Erro ao executar a consulta SQL:", error);
         throw error;
-    }
-}
-
+    };
+};
 
 export {
     StartConnection,
