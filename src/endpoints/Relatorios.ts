@@ -42,42 +42,45 @@ router.post(
         const {
             dataInicio,
             dataFim,
-            estacoes,
+            estacoes
         } = req.body as IFiltroRelatorios;
 
-        let filtroMapa = ''
-        let filtroSensor = ''
-        let filtroEstacao = ''
-        let filtroAlerta = ''
-        let filtroTemperatura = ''
+        let filtroMapa = '';
+        let filtroSensor = '';
+        let filtroEstacao = '';
+        let filtroAlerta = '';
+        let filtroTemperatura = '';
+        const queryParams: any[] = [];
 
         if (estacoes) {
-            const ids = estacoes.join(',')
-            filtroMapa = `where id in (${ids})`
-            filtroEstacao += ` "a".id_estacao in (${ids})`
-            filtroTemperatura += ` and "a".id_estacao in (${ids})`
+            filtroMapa = `WHERE id = ANY($${queryParams.length + 1}::int[])`;
+            filtroEstacao += `"a".id_estacao = ANY($${queryParams.length + 1}::int[])`;
+            filtroTemperatura += `AND "a".id_estacao = ANY($${queryParams.length + 1}::int[])`;
+            queryParams.push(estacoes);
         }
+
+        const queryParamsMapa: any[] = [...queryParams];
+
         if (dataInicio) {
-            filtroSensor += ` "m".data_hora >= '${dataInicio}'`;
-            filtroEstacao += (filtroEstacao && " and") + ` "o".data_hora >= '${dataInicio}'`;
-            filtroAlerta += `"o".data_hora >= ' ${dataInicio}'`;
-            filtroTemperatura += ` and "m".data_hora >= '${dataInicio}'`;
+            filtroSensor += `"m".data_hora >= $${queryParams.length + 1}`;
+            filtroEstacao += (filtroEstacao && ' AND ') + `"o".data_hora >= $${queryParams.length + 1}`;
+            filtroAlerta += `"o".data_hora >= $${queryParams.length + 1}`;
+            filtroTemperatura += ` AND "m".data_hora >= $${queryParams.length + 1}`;
+            queryParams.push(dataInicio);
         }
+
         if (dataFim) {
-            filtroSensor += (filtroSensor && " and") + ` "m".data_hora <= '${dataFim}'`;
-            filtroEstacao += (filtroEstacao && " and") + ` "o".data_hora <= '${dataFim}'`;
-            filtroAlerta += (filtroAlerta && " and") + ` "o".data_hora <= '${dataFim}'`;
-            filtroTemperatura += ` and "m".data_hora <= '${dataFim}'`
+            filtroSensor += (filtroSensor && ' AND ') + `"m".data_hora <= $${queryParams.length + 1}`;
+            filtroEstacao += (filtroEstacao && ' AND ') + `"o".data_hora <= $${queryParams.length + 1}`;
+            filtroAlerta += (filtroAlerta && ' AND ') + `"o".data_hora <= $${queryParams.length + 1}`;
+            filtroTemperatura += ` AND "m".data_hora <= $${queryParams.length + 1}`;
+            queryParams.push(dataFim);
         }
-        if (filtroSensor != '') {
-            filtroSensor = 'where' + filtroSensor
-        }
-        if (filtroEstacao != '') {
-            filtroEstacao = 'where' + filtroEstacao
-        }
-        if (filtroAlerta != '') {
-            filtroAlerta = 'where' + filtroAlerta
-        }
+
+        if (filtroSensor) filtroSensor = `WHERE ${filtroSensor}`;
+        if (filtroEstacao) filtroEstacao = `WHERE ${filtroEstacao}`;
+        if (filtroAlerta) filtroAlerta = `WHERE ${filtroAlerta}`;
+
         let bdConn: Pool | null = null;
         try {
             bdConn = StartConnection();
@@ -85,35 +88,35 @@ router.post(
             const resultQueryMapaEstacoes = await Query<IPontoMapa>(
                 bdConn,
                 `SELECT latitude, longitude FROM estacao ${filtroMapa};`,
-                []
+                [...queryParamsMapa]
             );
 
             /* RELATÓRIO DE MÉDIA POR SENSOR */
             const resultQueryMediaSensor = await Query<IBarras>(
                 bdConn,
-                `SELECT concat("s".nome, ' (', "e".nome, ')') as x, avg("m".valor_calculado) as y  FROM medicao "m" INNER JOIN sensor "s" ON "s".id = "m".id_sensor  INNER JOIN sensorestacao "se" ON "se".id_sensor = "s".id INNER JOIN estacao "e" ON "e".id = "se".id_estacao INNER JOIN parametro "p" ON "p".id = "s".id_parametro ${filtroSensor} GROUP BY "s".id, "e".id, "p".id;`,
-                []
+                `SELECT concat("s".nome, ' (', "e".nome, ')') as x, avg("m".valor_calculado) as y FROM medicao "m" INNER JOIN sensor "s" ON "s".id = "m".id_sensor INNER JOIN sensorestacao "se" ON "se".id_sensor = "s".id INNER JOIN estacao "e" ON "e".id = "se".id_estacao INNER JOIN parametro "p" ON "p".id = "s".id_parametro ${filtroSensor} GROUP BY "s".id, "e".id, "p".id;`,
+                [...queryParams]
             );
 
             /* RELATÓRIO DE ALERTAS POR ESTAÇÃO */
             const resultQueryAlertaEstacao = await Query<IBarras>(
                 bdConn,
                 `SELECT "e".nome as x, count(*) as y FROM ocorrencia "o" INNER JOIN alerta "a" ON "a".id = "o".id_alerta INNER JOIN estacao "e" ON "e".id = "a".id_estacao ${filtroEstacao} GROUP BY "e".id;`,
-                []
+                [...queryParams]
             );
 
             /* RELATÓRIO DE OCORRÊNCIAS POR ALERTA */
             const resultQueryOcorrenciaAlerta = await Query<IBarras>(
                 bdConn,
                 `SELECT "a".nome as x, count(*) as y FROM ocorrencia "o" INNER JOIN alerta "a" ON "a".id = "o".id_alerta INNER JOIN estacao "e" ON "e".id = "a".id_estacao ${filtroAlerta} GROUP BY "a".id;`,
-                []
+                [...queryParams]
             );
 
             /* RELATÓRIO DE TEMPERATURA */
             const resultQueryTemperatura = await Query<ITemperatura>(
                 bdConn,
-                `SELECT "s".nome as sensor, "e".nome as estacao, TO_TIMESTAMP(FLOOR(EXTRACT(EPOCH FROM "m".data_hora) / (15 * 60)) * (15 * 60)) AS data_hora, AVG("m".valor_calculado) as temperatura FROM medicao "m" INNER JOIN sensor "s" ON "s".id = "m".id_sensor INNER JOIN sensorestacao "se" ON "se".id_sensor = "s".id INNER JOIN estacao "e" ON "e".id = "se".id_estacao INNER JOIN parametro "p" ON "p".id = "s".id_parametro WHERE "s".nome IN ('Sensor Fº', 'Sensor Kº', 'Sensor Cº')${filtroTemperatura} GROUP BY "s".nome, "e".nome, TO_TIMESTAMP(FLOOR(EXTRACT(EPOCH FROM "m".data_hora) / (15 * 60)) * (15 * 60));`,
-                []
+                `SELECT "s".nome as sensor, "e".nome as estacao, TO_TIMESTAMP(FLOOR(EXTRACT(EPOCH FROM "m".data_hora) / (15 * 60)) * (15 * 60)) AS data_hora, AVG("m".valor_calculado) as temperatura FROM medicao "m" INNER JOIN sensor "s" ON "s".id = "m".id_sensor INNER JOIN sensorestacao "se" ON "se".id_sensor = "s".id INNER JOIN estacao "e" ON "e".id = "se".id_estacao INNER JOIN parametro "p" ON "p".id = "s".id_parametro WHERE "s".nome IN ('Sensor Fº', 'Sensor Kº', 'Sensor Cº') ${filtroTemperatura} GROUP BY "s".nome, "e".nome, TO_TIMESTAMP(FLOOR(EXTRACT(EPOCH FROM "m".data_hora) / (15 * 60)) * (15 * 60));`,
+                [...queryParams]
             );
 
             /* NORMALIZAÇÃO DAS TEMPERATURAS PARA ºC */
