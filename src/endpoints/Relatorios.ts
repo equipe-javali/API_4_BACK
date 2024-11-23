@@ -112,11 +112,9 @@ router.post(
             /* RELATÓRIO DE TEMPERATURA */
             const resultQueryTemperatura = await Query<ITemperatura>(
                 bdConn,
-                `SELECT "s".nome as sensor, "e".nome as estacao, DATE_TRUNC('minute', "m".data_hora) + INTERVAL '15 minutes' * FLOOR(EXTRACT(EPOCH FROM "m".data_hora) / (15 * 60)) AS data_hora, AVG("m".valor_calculado) AS temperatura FROM medicao "m" INNER JOIN sensor "s" ON "s".id = "m".id_sensor INNER JOIN sensorestacao "se" ON "se".id_sensor = "s".id INNER JOIN estacao "e" ON "e".id = "se".id_estacao INNER JOIN parametro "p" ON "p".id = "s".id_parametro WHERE "s".nome IN ('Sensor Fº', 'Sensor Kº', 'Sensor Cº')${filtroAlerta} GROUP BY "s".id, "e".id, "p".id, data_hora;`,
+                `SELECT "s".nome as sensor, "e".nome as estacao, TO_TIMESTAMP(FLOOR(EXTRACT(EPOCH FROM "m".data_hora) / (15 * 60)) * (15 * 60)) AS data_hora, AVG("m".valor_calculado) as temperatura FROM medicao "m" INNER JOIN sensor "s" ON "s".id = "m".id_sensor INNER JOIN sensorestacao "se" ON "se".id_sensor = "s".id INNER JOIN estacao "e" ON "e".id = "se".id_estacao INNER JOIN parametro "p" ON "p".id = "s".id_parametro WHERE "s".nome IN ('Sensor Fº', 'Sensor Kº', 'Sensor Cº')${filtroTemperatura} GROUP BY "s".nome, "e".nome, TO_TIMESTAMP(FLOOR(EXTRACT(EPOCH FROM "m".data_hora) / (15 * 60)) * (15 * 60));`,
                 []
             );
-            
-            console.log('Result Query Temperatura:', resultQueryTemperatura);
 
             const relatoriosTemperaturaTratada: ITemperatura[] = resultQueryTemperatura.rows.map((query: ITemperatura) => {
                 const temperatura: number =
@@ -156,7 +154,7 @@ router.post(
                 },
                 temperatura: {
                     dados: relatoriosTemperaturaTratada.map((dado: ITemperatura) => [dado.sensor, dado.estacao, dado.data_hora.toString(), dado.temperatura.toString()]),
-                    subtitulos: ['Sensor (nome)', 'Estação (nome)', 'Data e hora (data)', 'Temperatura (º C)'],
+                    subtitulos: ['Sensor (nome)', 'Estação (nome)', 'Data e hora (data)', 'Temperatura (ºC)'],
                     titulo: 'Temperatura por sensor a cada 15 minutos'
                 }
             };
