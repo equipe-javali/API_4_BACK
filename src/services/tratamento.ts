@@ -165,7 +165,8 @@ function ChecaAlerta(alerta: IAlertaParametro, valor: number): boolean {
 
 async function TratarDados() {
     const redis = await redisStartConnection();
-    if (!redis) return
+    if (!redis) return;
+
     const chaves = await redis.keys("*");
 
     for (const chave of chaves) {
@@ -174,39 +175,49 @@ async function TratarDados() {
 
         const dadosMedicao: IDadosEstacao = JSON.parse(conteudoChave);
         const alertas: Array<IAlertaParametro> = await ListagemAlertas(dadosMedicao.uid);
+        const parametrosMedicao = Object.getOwnPropertyNames(dadosMedicao).filter((n) => n !== "uid" && n !== "uxt");
 
-        const parametrosMedicao = Object.getOwnPropertyNames(dadosMedicao).filter((n) => n != "uid" && n != "uxt");
         for (const nomeParametro of parametrosMedicao) {
             if (!(await EstacaoPossuiSensorParametro(dadosMedicao.uid, nomeParametro))) continue;
 
             const valorMedicao = parseFloat(dadosMedicao[nomeParametro]);
             const valorTratado = await TratarParametro(dadosMedicao.uid, nomeParametro, valorMedicao);
+            const dataCorrigida = await CalcularDataCorrigida(dadosMedicao.uxt);
 
-            const timezoneOffset = -3 * 60 * 60 * 1000;
-            const dataCorrigida = new Date(Math.floor(parseFloat(dadosMedicao.uxt)) * 1000 + timezoneOffset).toISOString();
-            const medicao: ICadastrarMedicao = {
-                sensor: {
-                    id: await GetSensorID(dadosMedicao.uid, nomeParametro)
-                },
-                data_hora: dataCorrigida,
-                valor_calculado: valorTratado
-            } as ICadastrarMedicao;
+            const medicao = await PrepararMedicao(dadosMedicao.uid, nomeParametro, dataCorrigida, valorTratado);
             await RegistrarMedicao(medicao);
 
-            for (const alerta of alertas) {
-                if (alerta.nome_json !== nomeParametro) continue;
-
-                if (ChecaAlerta(alerta, valorTratado)) {
-                    await RegistrarOcorrenciaAlerta(alerta, medicao);
-                };
-            };
-        };
+            await VerificarERegistrarAlertas(alertas, nomeParametro, valorTratado, medicao);
+        }
 
         await redis.del(chave);
-    };
-    if (redis) await redis.quit();
-};
+    }
 
-export {
-    TratarDados
+    if (redis) await redis.quit();
 }
+
+async function CalcularDataCorrigida(uxt: string): Promise<string> {
+    const timezoneOffset = -3 * 60 * 60 * 1000;
+    return new Date(Math.floor(parseFloat(uxt)) * 1000 + timezoneOffset).toISOString();
+}
+
+async function PrepararMedicao(uid: string, nomeParametro: string, dataCorrigida: string, valorTratado: number): Promise<ICadastrarMedicao> {
+    const sensorId = await GetSensorID(uid, nomeParametro);
+    return {
+        sensor: { id: sensorId },
+        data_hora: dataCorrigida,
+        valor_calculado: valorTratado
+    };
+}
+
+async function VerificarERegistrarAlertas(alertas: IAlertaParametro[], nomeParametro: string, valorTratado: number, medicao: ICadastrarMedicao) {
+    for (const alerta of alertas) {
+        if (alerta.nome_json !== nomeParametro) continue;
+
+        if (ChecaAlerta(alerta, valorTratado)) {
+            await RegistrarOcorrenciaAlerta(alerta, medicao);
+        }
+    }
+}
+
+export { TratarDados };
