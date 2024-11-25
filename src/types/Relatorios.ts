@@ -8,11 +8,12 @@ export interface IBarras {
     x: string
 }
 
-export interface ITemperatura {
+export interface ILeituraSensor {
     sensor: string,
     estacao: string,
+    unidade: string,
     data_hora: Date,
-    temperatura: number
+    valor: number
 }
 
 export interface IFiltroRelatorios {
