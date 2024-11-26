@@ -50,30 +50,29 @@ router.post(
         let filtroEstacao = '';
         let filtroAlerta = '';
         let filtroLeitura = '';
+        const queryEstacoes = estacoes ?? [];
         const queryParams: any[] = [];
 
         if (estacoes) {
-            filtroMapa = `WHERE id = ANY($${queryParams.length + 1}::int[])`;
-            filtroEstacao += `"a".id_estacao = ANY($${queryParams.length + 1}::int[])`;
-            filtroLeitura += `"a".id_estacao = ANY($${queryParams.length + 1}::int[])`;
-            queryParams.push(estacoes);
+            const ids = estacoes?.map((_, index) => `$${index + 1}`).join(", ");
+            filtroMapa = `WHERE id IN (${ids})`
+            filtroEstacao += ` "a".id_estacao IN (${ids})`
+            filtroLeitura += `"e".id in (${ids})`
         }
 
-        const queryParamsMapa: any[] = [...queryParams];
-
         if (dataInicio) {
-            filtroSensor += `"m".data_hora >= $${queryParams.length + 1}`;
-            filtroEstacao += (filtroEstacao && ' AND ') + `"o".data_hora >= $${queryParams.length + 1}`;
-            filtroAlerta += `"o".data_hora >= $${queryParams.length + 1}`;
-            filtroLeitura += (filtroLeitura && ' AND ') + `"m".data_hora >= $${queryParams.length + 1}`;
+            filtroSensor += `"m".data_hora >= $1`;
+            filtroEstacao += (filtroEstacao && ' AND ') + `"o".data_hora >= $${queryEstacoes.length + 1}`;
+            filtroAlerta += `"o".data_hora >= $1`;
+            filtroLeitura += (filtroLeitura && ' AND ') + `"m".data_hora >= $${queryEstacoes.length + 1}`;
             queryParams.push(dataInicio);
         }
 
         if (dataFim) {
             filtroSensor += (filtroSensor && ' AND ') + `"m".data_hora <= $${queryParams.length + 1}`;
-            filtroEstacao += (filtroEstacao && ' AND ') + `"o".data_hora <= $${queryParams.length + 1}`;
+            filtroEstacao += (filtroEstacao && ' AND ') + `"o".data_hora <= $${queryEstacoes.length + queryParams.length + 1}`;
             filtroAlerta += (filtroAlerta && ' AND ') + `"o".data_hora <= $${queryParams.length + 1}`;
-            filtroLeitura += (filtroLeitura && ' AND ') + `"m".data_hora <= $${queryParams.length + 1}`;
+            filtroLeitura += (filtroLeitura && ' AND ') + `"m".data_hora <= $${queryEstacoes.length + queryParams.length + 1}`;
             queryParams.push(dataFim);
         }
 
@@ -89,7 +88,7 @@ router.post(
             const resultQueryMapaEstacoes = await Query<IPontoMapa>(
                 bdConn,
                 `SELECT latitude, longitude FROM estacao ${filtroMapa};`,
-                [...queryParamsMapa]
+                [...queryEstacoes]
             );
 
             /* RELATÓRIO DE MÉDIA POR SENSOR */
@@ -103,7 +102,7 @@ router.post(
             const resultQueryAlertaEstacao = await Query<IBarras>(
                 bdConn,
                 `SELECT "e".nome as x, count(*) as y FROM ocorrencia "o" INNER JOIN alerta "a" ON "a".id = "o".id_alerta INNER JOIN estacao "e" ON "e".id = "a".id_estacao ${filtroEstacao} GROUP BY "e".id;`,
-                [...queryParams]
+                [...queryEstacoes, ...queryParams]
             );
 
             /* RELATÓRIO DE OCORRÊNCIAS POR ALERTA */
@@ -117,7 +116,7 @@ router.post(
             const resultQueryLeituraSensor = await Query<ILeituraSensor>(
                 bdConn,
                 `SELECT "s".nome as sensor, "e".nome as estacao, "u".nome as unidade, TO_TIMESTAMP(FLOOR(EXTRACT(EPOCH FROM "m".data_hora) / (15 * 60)) * (15 * 60)) AS data_hora, AVG("m".valor_calculado) as valor FROM medicao "m" INNER JOIN sensor "s" ON "s".id = "m".id_sensor INNER JOIN sensorestacao "se" ON "se".id_sensor = "s".id INNER JOIN estacao "e" ON "e".id = "se".id_estacao INNER JOIN parametro "p" ON "p".id = "s".id_parametro INNER JOIN unidade_medida "u" ON "u".id = "p".id_unidade ${filtroLeitura} GROUP BY "s".nome, "e".nome, "u".nome, TO_TIMESTAMP(FLOOR(EXTRACT(EPOCH FROM "m".data_hora) / (15 * 60)) * (15 * 60));`,
-                [...queryParams]
+                [...queryEstacoes, ...queryParams]
             );
 
             /* NORMALIZAÇÃO DAS TEMPERATURAS PARA ºC */
