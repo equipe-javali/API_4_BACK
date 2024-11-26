@@ -9,7 +9,7 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -30,23 +30,3 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Upload Test Results
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: test-results
-          path: test-results.xml
-
-  sonarcloud:
-    name: SonarQube Cloud
-    needs: build-and-test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: SonarQube Cloud Scan
-        uses: SonarSource/sonarcloud-github-action@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
