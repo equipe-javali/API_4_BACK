@@ -38,5 +38,6 @@ export interface IRelatorios {
     alertaPorEstacoes: IGraficos,
     medicaoPorSensor: IGraficos,
     ocorrenciaPorAlerta: IGraficos,
-    temperatura: IGraficos
+    temperatura: IGraficos,
+    umidade: IGraficos
 };
