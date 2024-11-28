@@ -119,57 +119,52 @@ router.post(
                 [...queryEstacoes, ...queryParams]
             );
 
-            /* NORMALIZAÇÃO DAS TEMPERATURAS PARA ºC */
-            const relatoriosTemperaturaTratada: ILeituraSensor[] = resultQueryLeituraSensor.map((query: ILeituraSensor) => {
-                let temperatura: number | undefined = query.valor;
+            const relatoriosTemperaturaTratada: ILeituraSensor[] = [];
+            const relatoriosUmidadeTratada: ILeituraSensor[] = [];
+
+            /* NORMALIZAÇÃO DOS LEITORES */
+            resultQueryLeituraSensor.forEach((query: ILeituraSensor) => {
+                let valor = query.valor;
+                let tipo: 'temperatura' | 'umidade' | undefined;
 
                 if (query.unidade) {
                     if (query.unidade === '°F') {
-                        temperatura = (temperatura - 32) * 5 / 9;
+                        valor = (valor - 32) * 5 / 9;
+                        tipo = 'temperatura';
                     } else if (query.unidade === '°K') {
-                        temperatura = temperatura - 273.15;
-                    } else if (query.unidade !== '°C') {
-                        temperatura = undefined;
-                    }
-                }
-
-                if (temperatura !== undefined) {
-                    return {
-                        sensor: query.sensor,
-                        estacao: query.estacao,
-                        data_hora: query.data_hora,
-                        valor: temperatura,
-                        unidade: '°C'
-                    };
-                }
-                return undefined;
-            }).filter((item): item is ILeituraSensor => item !== undefined);
-
-            /* NORMALIZAÇÃO DA UMIDADE PARA MM */
-            const relatoriosUmidadeTratada: ILeituraSensor[] = resultQueryLeituraSensor.map((query: ILeituraSensor) => {
-                let umidade: number | undefined = query.valor;
-
-                if (query.unidade) {
-                    if (query.unidade === 'm') {
-                        umidade = umidade * 1000
+                        valor = valor - 273.15;
+                        tipo = 'temperatura';
+                    } else if (query.unidade === '°C') {
+                        tipo = 'temperatura';
+                    } else if (query.unidade === 'm') {
+                        valor = valor * 1000;
+                        tipo = 'umidade';
                     } else if (query.unidade === 'cm') {
-                        umidade = umidade * 100
-                    } else if (query.unidade !== 'mm') {
-                        umidade = undefined;
+                        valor = valor * 100;
+                        tipo = 'umidade';
+                    } else if (query.unidade === 'mm') {
+                        tipo = 'umidade';
                     }
                 }
 
-                if (umidade !== undefined) {
-                    return {
+                if (tipo === 'temperatura') {
+                    relatoriosTemperaturaTratada.push({
                         sensor: query.sensor,
                         estacao: query.estacao,
                         data_hora: query.data_hora,
-                        valor: umidade,
-                        unidade: 'm'
-                    };
+                        valor: valor,
+                        unidade: '°C'
+                    });
+                } else if (tipo === 'umidade') {
+                    relatoriosUmidadeTratada.push({
+                        sensor: query.sensor,
+                        estacao: query.estacao,
+                        data_hora: query.data_hora,
+                        valor: valor,
+                        unidade: 'mm'
+                    });
                 }
-                return undefined;
-            }).filter((item): item is ILeituraSensor => item !== undefined);
+            });
 
             const relatorios: IRelatorios = {
                 mapaEstacoes: {
