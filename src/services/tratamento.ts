@@ -146,7 +146,7 @@ async function ListagemAlertas(macEstacao: string): Promise<IAlertaParametro[]> 
     return [];
 }
 
-function ChecaAlerta(alerta: IAlertaParametro, valor: number): boolean {
+export function ChecaAlerta(alerta: IAlertaParametro, valor: number): boolean {
     switch (alerta.condicao) {
         case "<":
             return valor < alerta.valor;
