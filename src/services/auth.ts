@@ -1,6 +1,6 @@
 import { Query } from "./postgres";
 import { Pool } from "pg";
-const { HashPasswordCompare, HashPassword } = require("./bcrypt");
+import { HashPassword, HashPasswordCompare } from './bcrypt';
 
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
