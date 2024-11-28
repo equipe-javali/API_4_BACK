@@ -8,4 +8,4 @@ function HashPasswordCompare(hash: string, password: string): boolean {
     return compareSync(password, hash);
 }
 
-module.exports = { HashPassword, HashPasswordCompare };
+export { HashPassword, HashPasswordCompare };
