@@ -145,6 +145,32 @@ router.post(
                 return undefined;
             }).filter((item): item is ILeituraSensor => item !== undefined);
 
+            /* NORMALIZAÇÃO DA UMIDADE PARA MM */
+            const relatoriosUmidadeTratada: ILeituraSensor[] = resultQueryLeituraSensor.map((query: ILeituraSensor) => {
+                let umidade: number | undefined = query.valor;
+
+                if (query.unidade) {
+                    if (query.unidade === 'm') {
+                        umidade = umidade * 1000
+                    } else if (query.unidade === 'cm') {
+                        umidade = umidade * 100
+                    } else if (query.unidade !== 'mm') {
+                        umidade = undefined;
+                    }
+                }
+
+                if (umidade !== undefined) {
+                    return {
+                        sensor: query.sensor,
+                        estacao: query.estacao,
+                        data_hora: query.data_hora,
+                        valor: umidade,
+                        unidade: 'm'
+                    };
+                }
+                return undefined;
+            }).filter((item): item is ILeituraSensor => item !== undefined);
+
             const relatorios: IRelatorios = {
                 mapaEstacoes: {
                     dados: resultQueryMapaEstacoes.map((ponto: IPontoMapa) => [ponto.longitude.toString(), ponto.latitude.toString()]),
@@ -170,6 +196,11 @@ router.post(
                     dados: relatoriosTemperaturaTratada.map((dado: ILeituraSensor) => [dado.sensor, dado.estacao, dado.data_hora.toString(), dado.valor.toString()]),
                     subtitulos: ['Sensor (nome)', 'Estação (nome)', 'Data e hora (data)', 'Temperatura (ºC)'],
                     titulo: 'Temperatura por sensor a cada 15 minutos'
+                },
+                umidade: {
+                    dados: relatoriosUmidadeTratada.map((dado: ILeituraSensor) => [dado.sensor, dado.estacao, dado.data_hora.toString(), dado.valor.toString()]),
+                    subtitulos: ['Sensor (nome)', 'Estação (nome)', 'Data e hora (data)', 'Umidade (mm)'],
+                    titulo: 'Umidade por sensor a cada 15 minutos'
                 }
             };
 
