@@ -1,8 +1,6 @@
 name: CI Backend Integration Tests
 
 on:
-  schedule:
-    - cron: '0 0 * * *' # Executa diariamente à meia-noite UTC
   workflow_dispatch:       # Permite acionamento manual do workflow
 
 jobs:
