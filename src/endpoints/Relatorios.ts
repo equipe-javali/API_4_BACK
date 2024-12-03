@@ -115,7 +115,7 @@ router.post(
             /* RELATÓRIO DE LEITOR */
             const resultQueryLeituraSensor = await Query<ILeituraSensor>(
                 bdConn,
-                `SELECT "s".nome as sensor, "e".nome as estacao, "u".nome as unidade, TO_TIMESTAMP(FLOOR(EXTRACT(EPOCH FROM "m".data_hora) / (1 * 60)) * (1 * 60)) AS data_hora, AVG("m".valor_calculado) as valor FROM medicao "m" INNER JOIN sensor "s" ON "s".id = "m".id_sensor INNER JOIN sensorestacao "se" ON "se".id_sensor = "s".id INNER JOIN estacao "e" ON "e".id = "se".id_estacao INNER JOIN parametro "p" ON "p".id = "s".id_parametro INNER JOIN unidade_medida "u" ON "u".id = "p".id_unidade ${filtroLeitura} GROUP BY "s".nome, "e".nome, "u".nome, TO_TIMESTAMP(FLOOR(EXTRACT(EPOCH FROM "m".data_hora) / (1 * 60)) * (1 * 60));`,
+                `SELECT "s".nome as sensor, "e".nome as estacao, "u".nome as unidade, TO_TIMESTAMP(FLOOR(EXTRACT(EPOCH FROM "m".data_hora) / (15 * 60)) * (15 * 60)) AS data_hora, AVG("m".valor_calculado) as valor FROM medicao "m" INNER JOIN sensor "s" ON "s".id = "m".id_sensor INNER JOIN sensorestacao "se" ON "se".id_sensor = "s".id INNER JOIN estacao "e" ON "e".id = "se".id_estacao INNER JOIN parametro "p" ON "p".id = "s".id_parametro INNER JOIN unidade_medida "u" ON "u".id = "p".id_unidade ${filtroLeitura} GROUP BY "s".nome, "e".nome, "u".nome, TO_TIMESTAMP(FLOOR(EXTRACT(EPOCH FROM "m".data_hora) / (15 * 60)) * (15 * 60));`,
                 [...queryEstacoes, ...queryParams]
             );
 
