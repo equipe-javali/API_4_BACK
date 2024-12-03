@@ -3,6 +3,8 @@ require("dotenv-ts").config();
 import cors from "cors";
 import express from "express";
 import swaggerUi from "swagger-ui-express";
+import { EndConnection as redisEndConnection } from "./services/redis";
+import { EndConnection as postgresEndConnection } from "./services/redis";
 import { swaggerDocs } from "./swagger/swagger";
 import { EstacaoRouter } from "./endpoints/Estacao";
 import { UsuarioRouter } from "./endpoints/Usuario";
@@ -35,17 +37,38 @@ app.use("/recepcaoDados", RecepcaoDadosRouter);
 app.use("/relatorio", RelatorioRouter);
 
 // roda o serviço a cada X minutos para tratar os dados guardados no redis
-const { DELAY_TRATAMENTO } = process.env
+const { DELAY_TRATAMENTO } = process.env;
 setTimeout(async () => {
   await TratarDados();
 }, 1000 * 60 * (DELAY_TRATAMENTO ? parseInt(DELAY_TRATAMENTO) : 5));
 
-app.listen(
+const server = app.listen(
   PORT,
   "0.0.0.0",
   function () {
     console.log(`API aberta na porta ${PORT}`);
   }
 );
+
+function FecharConexoes() {
+  redisEndConnection();
+  postgresEndConnection();
+}
+
+process.on('SIGINT', () => {
+  console.log("Fechando a API");
+  server.close(() => {
+    FecharConexoes();
+    process.exit(0);
+  });
+});
+
+process.on('SIGTERM', () => {
+  console.log("Fechando a API");
+  server.close(() => {
+    FecharConexoes();
+    process.exit(0);
+  });
+});
 
 module.exports = app;

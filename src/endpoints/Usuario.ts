@@ -1,7 +1,7 @@
 //usuario.ts
 
 import express, { Request, Response } from "express";
-import { StartConnection, EndConnection, Query } from "../services/postgres";
+import { StartConnection, Query } from "../services/postgres";
 import { Pool } from "pg";
 import { ICadastrarUsuario, IDeletarUsuario, IAtualizarUsuario, IListarUsuario } from "../types/Usuario";
 import { IResponsePadrao } from "../types/Response";
@@ -111,7 +111,7 @@ router.post(
             };
             res.status(500).send(retorno);
         }
-        if (bdConn) EndConnection(bdConn);
+        
     }
 );
 
@@ -210,7 +210,7 @@ router.post(
             };
             res.status(statusCode).send(retorno);
         }
-        if (bdConn) EndConnection(bdConn);
+        
     }
 );
 
@@ -280,7 +280,7 @@ router.get(
             } as IResponsePadrao;
             res.status(500).send(retorno);
         }
-        if (bdConn) EndConnection(bdConn);
+        
     }
 );
 
@@ -369,12 +369,12 @@ router.get(
             } as IResponsePadrao;
             res.status(500).send(retorno);
         }
-        if (bdConn) EndConnection(bdConn);
+        
     }
 );
 
 // Aplicar o middleware de autenticação JWT para TODAS as rotas abaixo:
-router.use(authenticateJWT);
+// router.use(authenticateJWT);
 
 router.post(
     "/logout",
@@ -503,7 +503,7 @@ router.patch(
             };
             res.status(statusCode).send(retorno);
         }
-        if (bdConn) EndConnection(bdConn);
+        
     }
 );
 
@@ -576,7 +576,7 @@ router.delete(
             } as IResponsePadrao;
             res.status(500).send(retorno);
         }
-        if (bdConn) EndConnection(bdConn);
+        
     }
 );
 

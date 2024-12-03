@@ -1,7 +1,7 @@
 import express, { Request, Response } from "express";
 import { IResponsePadrao } from "../types/Response";
 import { Pool } from "pg";
-import { StartConnection, EndConnection, Query } from "../services/postgres";
+import { StartConnection, Query } from "../services/postgres";
 import { IAtualizarAlerta, ICadastrarAlerta, IDeletarAlerta, IListarAlerta } from "../types/Alerta";
 import { authenticateJWT } from "../services/auth";
 
@@ -62,7 +62,7 @@ router.get(
                     data: null
                 } as IResponsePadrao;
                 res.status(404).send(retorno);
-                if (bdConn) EndConnection(bdConn);
+                
                 return;
             };
 
@@ -84,7 +84,7 @@ router.get(
             } as IResponsePadrao;
             res.status(500).send(retorno);
         }
-        if (bdConn) EndConnection(bdConn);
+        
     }
 );
 
@@ -147,7 +147,7 @@ router.get(
             } as IResponsePadrao;
             res.status(500).send(retorno);
         }
-        if (bdConn) EndConnection(bdConn);
+        
     }
 );
 
@@ -224,7 +224,7 @@ router.post(
             } as IResponsePadrao;
             res.status(500).send(retorno);
         };
-        if (bdConn) EndConnection(bdConn);
+        
     }
 );
 
@@ -318,7 +318,7 @@ router.patch(
             } as IResponsePadrao;
             res.status(500).send(retorno);
         }
-        if (bdConn) EndConnection(bdConn);
+        
     }
 );
 /**
@@ -377,7 +377,7 @@ router.delete(
             } as IResponsePadrao;
             res.status(500).send(retorno);
         };
-        if (bdConn) EndConnection(bdConn);
+        
     }
 );
 export {

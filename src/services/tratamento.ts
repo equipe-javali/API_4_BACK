@@ -1,5 +1,5 @@
 import { Pool } from "pg";
-import { StartConnection, EndConnection, Query } from "./postgres";
+import { StartConnection, Query } from "./postgres";
 import { StartConnection as redisStartConnection } from "./redis";
 import { IAlertaParametro, ICadastrarMedicao, IDadosEstacao } from "../types/RecepcaoDados";
 
@@ -27,7 +27,7 @@ async function EstacaoPossuiSensorParametro(macEscacao: string, nomeParametro: s
     } catch (err) {
         console.log(`falha ao tratar dados: ${(err as Error).message}`);
     }
-    if (postgres) EndConnection(postgres);
+
 
     return retorno;
 }
@@ -57,7 +57,7 @@ async function TratarParametro(macEscacao: string, nomeParametro: string, valorM
     } catch (err) {
         console.log(`falha ao tratar dados: ${(err as Error).message}`);
     }
-    if (postgres) EndConnection(postgres);
+
     return valorMedido;
 }
 
@@ -75,7 +75,7 @@ async function RegistrarMedicao(medicao: ICadastrarMedicao) {
     } catch (err) {
         console.log(`falha ao tratar dados: ${(err as Error).message}`);
     }
-    if (postgres) EndConnection(postgres);
+
 }
 
 async function GetSensorID(macEscacao: string, nomeParametro: string) {
@@ -99,7 +99,7 @@ async function GetSensorID(macEscacao: string, nomeParametro: string) {
     } catch (err) {
         console.log(`falha ao tratar dados: ${(err as Error).message}`);
     }
-    if (postgres) EndConnection(postgres);
+
 
     return -1;
 }
@@ -118,7 +118,7 @@ async function RegistrarOcorrenciaAlerta(alerta: IAlertaParametro, medicao: ICad
     } catch (err) {
         console.log(`falha ao registrar ocorrência: ${(err as Error).message}`);
     }
-    if (postgres) EndConnection(postgres);
+
 }
 
 async function ListagemAlertas(macEstacao: string): Promise<IAlertaParametro[]> {
@@ -136,12 +136,12 @@ async function ListagemAlertas(macEstacao: string): Promise<IAlertaParametro[]> 
         );
 
         if (resultQuery.length > 0) {
-            return resultQuery;
+            return resultQuery as any[];
         }
     } catch (err) {
         console.log(`falha ao registrar ocorrência: ${(err as Error).message}`);
     }
-    if (postgres) EndConnection(postgres);
+
 
     return [];
 }
@@ -168,6 +168,7 @@ async function TratarDados() {
     if (!redis) return;
 
     const chaves = await redis.keys("*");
+    console.log(`Tratando ${chaves.length} dados`);
 
     for (const chave of chaves) {
         const conteudoChave = await redis.get(chave);
@@ -192,8 +193,7 @@ async function TratarDados() {
 
         await redis.del(chave);
     }
-
-    if (redis) await redis.quit();
+    console.log(`Dados tratados`);
 }
 
 async function CalcularDataCorrigida(uxt: string): Promise<string> {

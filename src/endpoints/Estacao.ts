@@ -2,7 +2,7 @@ import express, { Request, Response } from "express";
 import { IAtualizarEstacao, ICadastrarEstacao, IDeletarEstacao, IListarEstacao, ISensor } from "../types/Estacao";
 import { IResponsePadrao } from "../types/Response";
 import { Pool } from "pg";
-import { StartConnection, EndConnection, Query } from "../services/postgres";
+import { StartConnection, Query } from "../services/postgres";
 import { authenticateJWT } from "../services/auth";
 
 const router = express.Router();
@@ -62,7 +62,7 @@ router.get(
                     data: null
                 } as IResponsePadrao;
                 res.status(404).send(retorno);
-                if (bdConn) EndConnection(bdConn);
+                
                 return;
             }
 
@@ -95,7 +95,7 @@ router.get(
             } as IResponsePadrao;
             res.status(500).send(retorno);
         }
-        if (bdConn) EndConnection(bdConn);
+        
     }
 );
 /**
@@ -139,7 +139,7 @@ router.get(
                 [quantidade, pagina]
             );
 
-            const estacoes = resultQuery;
+            const estacoes = resultQuery as any[];
 
             // Buscar sensores associados para cada estação
             for (const estacao of estacoes) {
@@ -169,7 +169,7 @@ router.get(
             } as IResponsePadrao;
             res.status(500).send(retorno);
         }
-        if (bdConn) EndConnection(bdConn);
+        
     }
 );
 
@@ -244,7 +244,7 @@ router.post(
             } as IResponsePadrao;
             res.status(500).send(retorno);
         }
-        if (bdConn) EndConnection(bdConn);
+        
     }
 );
 
@@ -342,7 +342,7 @@ router.patch(
             } as IResponsePadrao;
             res.status(500).send(retorno);
         }
-        if (bdConn) EndConnection(bdConn);
+        
     }
 );
 
@@ -402,7 +402,7 @@ router.delete(
             } as IResponsePadrao;
             res.status(500).send(retorno);
         }
-        if (bdConn) EndConnection(bdConn);
+        
     }
 );
 
@@ -485,7 +485,7 @@ router.post(
             } as IResponsePadrao;
             res.status(500).send(retorno);
         }
-        if (bdConn) EndConnection(bdConn);
+        
     }
 );
 
@@ -568,7 +568,7 @@ router.post(
             } as IResponsePadrao;
             res.status(500).send(retorno);
         }
-        if (bdConn) EndConnection(bdConn);
+        
     }
 );
 

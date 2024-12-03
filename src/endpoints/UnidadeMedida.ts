@@ -2,7 +2,7 @@ import express, { Request, Response } from "express";
 import { IListarParametro } from "../types/Parametro";
 import { IResponsePadrao } from "../types/Response";
 import { Pool } from "pg";
-import { StartConnection, EndConnection, Query } from "../services/postgres";
+import { StartConnection, Query } from "../services/postgres";
 
 const router = express.Router();
 
@@ -59,7 +59,7 @@ router.get(
                     data: null
                 } as IResponsePadrao;
                 res.status(404).send(retorno);
-                if (bdConn) EndConnection(bdConn);
+                
                 return;
             }
 
@@ -79,7 +79,7 @@ router.get(
             } as IResponsePadrao;
             res.status(500).send(retorno);
         }
-        if (bdConn) EndConnection(bdConn);
+        
     }
 );
 /**
@@ -123,7 +123,7 @@ router.get(
             } as IResponsePadrao;
             res.status(500).send(retorno);
         }
-        if (bdConn) EndConnection(bdConn);
+        
     }
 );
 

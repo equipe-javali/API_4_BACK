@@ -61,6 +61,7 @@ router.post(
             } as IResponsePadrao;
             res.status(200).send(retorno);
         } catch (err) {
+            console.log(err);
             const retorno = {
                 errors: [(err as Error).message],
                 msg: ["Falha ao registrar dados da estação"],
@@ -68,7 +69,7 @@ router.post(
             } as IResponsePadrao;
             res.status(500).send(retorno);
         }
-        if (redisClient) await redisClient.quit();
+        // if (redisClient) await redisClient.quit();
     }
 );
 
