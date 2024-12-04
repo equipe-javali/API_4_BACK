@@ -40,6 +40,8 @@ jobs:
             npm install
             echo "Compilando o código TypeScript..."
             npx tsc
+            echo "Configurando variáveis de ambiente..."
+            export NODE_TLS_REJECT_UNAUTHORIZED=0
             echo "Iniciando a aplicação..."
             nohup node build/main.js > output.log 2>&1 &
             echo "Deploy concluído com sucesso."
